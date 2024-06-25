@@ -5,13 +5,13 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type TrafficMiddleware func(c gnet.Conn, buf []byte) error
+type TrafficHandlerFunc func(c gnet.Conn, buf []byte) error
 
 type GameServer struct {
 	gnet.BuiltinEventEngine
 
-	Addr                string
-	onTrafficMiddleware []TrafficMiddleware
+	Addr            string
+	trafficHandlers []TrafficHandlerFunc
 }
 
 func (g *GameServer) OnBoot(engine gnet.Engine) gnet.Action {
@@ -27,8 +27,8 @@ func (g *GameServer) OnTraffic(c gnet.Conn) gnet.Action {
 		return gnet.Close
 	}
 
-	for _, middleware := range g.onTrafficMiddleware {
-		if err := middleware(c, buf); err != nil {
+	for _, handler := range g.trafficHandlers {
+		if err := handler(c, buf); err != nil {
 			log.Error().Msgf("an error occurred while handling packet: %s", err.Error())
 			return gnet.Close
 		}
@@ -37,10 +37,10 @@ func (g *GameServer) OnTraffic(c gnet.Conn) gnet.Action {
 	return gnet.None
 }
 
-func NewGameServer(addr string, onTrafficMiddleware ...TrafficMiddleware) *GameServer {
+func NewGameServer(addr string, trafficHandlers ...TrafficHandlerFunc) *GameServer {
 	return &GameServer{
-		BuiltinEventEngine:  gnet.BuiltinEventEngine{},
-		Addr:                addr,
-		onTrafficMiddleware: onTrafficMiddleware,
+		BuiltinEventEngine: gnet.BuiltinEventEngine{},
+		Addr:               addr,
+		trafficHandlers:    trafficHandlers,
 	}
 }

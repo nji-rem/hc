@@ -13,17 +13,22 @@ import (
 // Injectors from wire.go:
 
 func InitializeApp(addr string) (*App, error) {
-	gameServer := NewSocketServer(addr)
-	app := NewApp(gameServer)
+	packetHandler := NewPacketHandler()
+	gameServer := NewSocketServer(addr, packetHandler)
+	app := NewApp(gameServer, packetHandler)
 	return app, nil
 }
 
 // wire.go:
 
-func NewSocketServer(addr string) *socket.GameServer {
-	return &socket.GameServer{Addr: addr}
+func NewSocketServer(addr string, packetHandler socket.PacketHandler) *socket.GameServer {
+	return socket.NewGameServer(addr, packetHandler.Handle)
 }
 
-func NewApp(gameServer *socket.GameServer) *App {
+func NewPacketHandler() socket.PacketHandler {
+	return socket.PacketHandler{}
+}
+
+func NewApp(gameServer *socket.GameServer, packetHandler socket.PacketHandler) *App {
 	return &App{GameServer: gameServer}
 }
