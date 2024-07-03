@@ -1,7 +1,7 @@
 package base64_test
 
 import (
-	"hc/internal/codec/base64"
+	"hc/internal/encoding/base64"
 	"testing"
 )
 
