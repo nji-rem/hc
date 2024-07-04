@@ -1,7 +1,5 @@
 // Copyright 2018 Ewout van Mansom. All rights reserved.
-// Use of this source code is governed by a AGPLv3
-// license that can be found in the LICENSE file.
-package encoding
+package vl64
 
 import (
 	"math"
@@ -47,12 +45,10 @@ func Encode(i int) []byte {
 	return vl64[:len]
 }
 
-// Length calculates the length of a VL64 sequence.
 func Length(firstChar byte) int {
 	return (int(firstChar) - int('@')) / 8
 }
 
-// Decode transforms the mixed radix representation into an integer.
 func Decode(s []byte) (int, int) {
 	len := Length(s[0])    // (firstChar - 64) / 8
 	total := int(s[0]) % 4 // Base4 value

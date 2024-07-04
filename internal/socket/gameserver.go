@@ -5,19 +5,33 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type TrafficHandlerFunc func(c gnet.Conn, buf []byte) error
+type (
+	ConnectionHandlerFunc func(c gnet.Conn) error
+	TrafficHandlerFunc    func(c gnet.Conn, buf []byte) error
+)
 
 type GameServer struct {
 	gnet.BuiltinEventEngine
 
-	Addr            string
-	trafficHandlers []TrafficHandlerFunc
+	Addr               string
+	connectionHandlers []ConnectionHandlerFunc
+	trafficHandlers    []TrafficHandlerFunc
 }
 
 func (g *GameServer) OnBoot(engine gnet.Engine) gnet.Action {
 	log.Info().Msgf("Game server started on address %s", g.Addr)
 
 	return gnet.None
+}
+
+func (g *GameServer) OnOpen(c gnet.Conn) (out []byte, action gnet.Action) {
+	for _, handler := range g.connectionHandlers {
+		if err := handler(c); err != nil {
+			return nil, gnet.Close
+		}
+	}
+
+	return
 }
 
 func (g *GameServer) OnTraffic(c gnet.Conn) gnet.Action {
@@ -37,10 +51,11 @@ func (g *GameServer) OnTraffic(c gnet.Conn) gnet.Action {
 	return gnet.None
 }
 
-func NewGameServer(addr string, trafficHandlers ...TrafficHandlerFunc) *GameServer {
+func NewGameServer(addr string, connectionHandlers []ConnectionHandlerFunc, trafficHandlers ...TrafficHandlerFunc) *GameServer {
 	return &GameServer{
 		BuiltinEventEngine: gnet.BuiltinEventEngine{},
 		Addr:               addr,
+		connectionHandlers: connectionHandlers,
 		trafficHandlers:    trafficHandlers,
 	}
 }

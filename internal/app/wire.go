@@ -9,8 +9,12 @@ import (
 	"hc/internal/socket/handler"
 )
 
-func NewSocketServer(addr string, packetHandler handler.PacketHandler) *socket.GameServer {
-	return socket.NewGameServer(addr, packetHandler.Handle)
+func NewSocketServer(addr string, newConnectionHandlers []socket.ConnectionHandlerFunc, packetHandler handler.PacketHandler) *socket.GameServer {
+	return socket.NewGameServer(addr, newConnectionHandlers, packetHandler.Handle)
+}
+
+func NewConnectionHandler() []socket.ConnectionHandlerFunc {
+	return []socket.ConnectionHandlerFunc{handler.SayHelloToClientHandler}
 }
 
 func NewPacketHandler() handler.PacketHandler {
@@ -22,7 +26,7 @@ func NewApp(gameServer *socket.GameServer, packetHandler handler.PacketHandler) 
 }
 
 func InitializeApp(addr string) (*App, error) {
-	wire.Build(NewApp, NewSocketServer, NewPacketHandler)
+	wire.Build(NewApp, NewSocketServer, NewConnectionHandler, NewPacketHandler)
 
 	return &App{}, nil
 }
