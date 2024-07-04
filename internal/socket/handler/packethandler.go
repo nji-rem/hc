@@ -14,7 +14,7 @@ type PacketHandler struct {
 
 func (p PacketHandler) Handle(c gnet.Conn, buf []byte) error {
 	if len(buf) < 5 {
-		return fmt.Errorf("len(buf) is too small, got %d", len(buf))
+		return fmt.Errorf("len(packetHello) is too small, got %d", len(buf))
 	}
 
 	fmt.Println(string(buf))
