@@ -16,6 +16,7 @@ func CollectRoutes() func() []routing.Route {
 					fmt.Println("handle secret key request")
 					return nil
 				},
+
 				Middleware: []routing.MiddlewareFunc{},
 			},
 		}

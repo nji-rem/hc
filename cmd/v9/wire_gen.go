@@ -8,25 +8,28 @@ package main
 
 import (
 	"github.com/google/wire"
+	socket2 "hc/api/socket"
+	"hc/cmd/v9/onconnection"
 	"hc/pkg/socket"
 )
 
 // Injectors from wire.go:
 
-func InitializeApp() (*App, error) {
+func InitializeApp() *App {
 	repository := socket.ProvideSocketRepository()
 	gameServer := socket.ProvideSocketServer(repository)
-	app := NewApp(gameServer, repository)
-	return app, nil
+	app := NewApp(repository, gameServer)
+	return app
 }
 
 // wire.go:
 
 var AppSet = wire.NewSet(socket.GameServerSet)
 
-func NewApp(gameServer *socket.GameServer, repository *socket.Repository) *App {
-	return &App{
-		GameServer:       gameServer,
-		GameConfigurator: repository,
-	}
+func NewApp(gameConfigurator socket2.Configurator, server *socket.GameServer) *App {
+	gameConfigurator.Configure(func(connectionHandlers *[]socket2.ConnectionHandlerFunc, trafficHandlers *[]socket2.TrafficHandlerFunc) {
+		*connectionHandlers = append(*connectionHandlers, onconnection.SayHelloToClientHandler)
+	})
+
+	return &App{GameServer: server}
 }

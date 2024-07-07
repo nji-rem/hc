@@ -5,22 +5,28 @@ package main
 
 import (
 	"github.com/google/wire"
-	socket2 "hc/pkg/socket"
+	apiSocket "hc/api/socket"
+	"hc/cmd/v9/onconnection"
+	"hc/pkg/socket"
 )
 
 var AppSet = wire.NewSet(
-	socket2.GameServerSet,
+	socket.GameServerSet,
 )
 
-func NewApp(gameServer *socket2.GameServer, repository *socket2.Repository) *App {
-	return &App{
-		GameServer:       gameServer,
-		GameConfigurator: repository,
-	}
+func NewApp(gameConfigurator apiSocket.Configurator, server *socket2.GameServer) *App {
+	// Configure game server
+	gameConfigurator.Configure(func(connectionHandlers *[]apiSocket.ConnectionHandlerFunc, trafficHandlers *[]apiSocket.TrafficHandlerFunc) {
+		*connectionHandlers = append(*connectionHandlers, onconnection.SayHelloToClientHandler)
+	})
+
+	// Load routes
+	CollectRoutes()
+	return &App{GameServer: server}
 }
 
-func InitializeApp() (*App, error) {
+func InitializeApp() *App {
 	wire.Build(NewApp, AppSet)
 
-	return &App{}, nil
+	return &App{}
 }
