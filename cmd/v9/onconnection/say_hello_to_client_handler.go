@@ -1,4 +1,4 @@
-package handler
+package onconnection
 
 import (
 	"github.com/panjf2000/gnet/v2"
@@ -10,7 +10,7 @@ var (
 )
 
 // SayHelloToClientHandler takes care of sending the "HELLO" packet to the client when the client connects to the
-// server. It does nothing more than that.
+// server.
 func SayHelloToClientHandler(c gnet.Conn) error {
 	if _, err := c.Write(packetHello); err != nil {
 		return err
