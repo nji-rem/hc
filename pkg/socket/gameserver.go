@@ -31,7 +31,7 @@ func (g *GameServer) OnOpen(c gnet.Conn) (out []byte, action gnet.Action) {
 func (g *GameServer) OnTraffic(c gnet.Conn) gnet.Action {
 	buf, err := c.Next(-1)
 	if err != nil {
-		log.Error().Msgf("unable to read packet, closing onconnection. err: %s", err.Error())
+		log.Error().Msgf("unable to read packet, closing connection. err: %s", err.Error())
 		return gnet.Close
 	}
 
