@@ -8,8 +8,10 @@ package main
 
 import (
 	"github.com/google/wire"
+	routing2 "hc/api/routing"
 	socket2 "hc/api/socket"
-	"hc/cmd/v9/onconnection"
+	"hc/cmd/v9/connection"
+	"hc/pkg/routing"
 	"hc/pkg/socket"
 )
 
@@ -18,18 +20,30 @@ import (
 func InitializeApp() *App {
 	repository := socket.ProvideSocketRepository()
 	gameServer := socket.ProvideSocketServer(repository)
-	app := NewApp(repository, gameServer)
+	routingRepository := routing.ProvideRepository()
+	app := NewApp(repository, gameServer, routingRepository)
 	return app
 }
 
 // wire.go:
 
-var AppSet = wire.NewSet(socket.GameServerSet)
+var AppSet = wire.NewSet(socket.GameServerSet, routing.RouteSet)
 
-func NewApp(gameConfigurator socket2.Configurator, server *socket.GameServer) *App {
+func NewApp(gameConfigurator socket2.Configurator, server *socket.GameServer, routeRepository *routing.Repository) *App {
+
 	gameConfigurator.Configure(func(connectionHandlers *[]socket2.ConnectionHandlerFunc, trafficHandlers *[]socket2.TrafficHandlerFunc) {
-		*connectionHandlers = append(*connectionHandlers, onconnection.SayHelloToClientHandler)
+		*connectionHandlers = append(*connectionHandlers, connection.SayHelloToClientHandler)
+
+		*trafficHandlers = append(*trafficHandlers, connection.PacketHandler{}.Handle)
 	})
+
+	collectedRoutes := CollectRoutes()
+	routeMap := make(map[string]routing2.Route, len(collectedRoutes))
+	for _, route := range CollectRoutes() {
+		routeMap[route.Name] = route
+	}
+
+	routeRepository.Routes = routeMap
 
 	return &App{GameServer: server}
 }
