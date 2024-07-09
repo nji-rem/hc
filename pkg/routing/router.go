@@ -3,6 +3,7 @@ package routing
 import (
 	"context"
 	"fmt"
+	"github.com/panjf2000/gnet/v2"
 	"github.com/rs/zerolog/log"
 	routingContract "hc/api/routing"
 	"hc/api/routing/request"
@@ -12,7 +13,7 @@ type RouteExecutor struct {
 	Repository routingContract.Repository
 }
 
-func (r *RouteExecutor) ExecutePacket(header string, data []byte) error {
+func (r *RouteExecutor) ExecutePacket(header string, c gnet.Conn, data []byte) error {
 	route, err := r.Repository.Get(header)
 	if err != nil {
 		return fmt.Errorf("unable to execute route: %s", err.Error())
@@ -27,5 +28,5 @@ func (r *RouteExecutor) ExecutePacket(header string, data []byte) error {
 		handler = middleware(handler)
 	}
 
-	return handler(ctx, data)
+	return handler(ctx, c, data)
 }

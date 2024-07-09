@@ -1,20 +1,16 @@
 package main
 
 import (
-	"fmt"
 	"hc/api/routing"
-	"hc/api/routing/request"
+	"hc/cmd/v9/messaging/incoming/handshake"
 )
 
 func CollectRoutes() []routing.Route {
 	return []routing.Route{
 		// Unauthenticated routes
 		{
-			Name: "CU",
-			Handler: func(ctx request.Context, packet any) error {
-				fmt.Println("handle secret key request")
-				return nil
-			},
+			Name:    "CJ",
+			Handler: handshake.HandleSecretKey,
 
 			Middleware: []routing.MiddlewareFunc{},
 		},

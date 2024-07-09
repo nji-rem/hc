@@ -7,6 +7,7 @@
 package main
 
 import (
+	"github.com/davecgh/go-spew/spew"
 	"github.com/google/wire"
 	routing2 "hc/api/routing"
 	socket2 "hc/api/socket"
@@ -21,20 +22,28 @@ func InitializeApp() *App {
 	repository := socket.ProvideSocketRepository()
 	gameServer := socket.ProvideSocketServer(repository)
 	routingRepository := routing.ProvideRepository()
-	app := NewApp(repository, gameServer, routingRepository)
+	routeExecutor := routing.ProvideRouteExecutor(routingRepository)
+	packetHandler := ProvidePacketHandler(routeExecutor)
+	app := NewApp(repository, gameServer, routingRepository, packetHandler)
 	return app
 }
 
 // wire.go:
 
-var AppSet = wire.NewSet(socket.GameServerSet, routing.RouteSet)
+var AppSet = wire.NewSet(socket.GameServerSet, routing.RouteSet, ProvidePacketHandler)
 
-func NewApp(gameConfigurator socket2.Configurator, server *socket.GameServer, routeRepository *routing.Repository) *App {
+func ProvidePacketHandler(router *routing.RouteExecutor) connection.PacketHandler {
+	return connection.PacketHandler{
+		Router: router,
+	}
+}
+
+func NewApp(gameConfigurator socket2.Configurator, server *socket.GameServer, routeRepository *routing.Repository, handler connection.PacketHandler) *App {
 
 	gameConfigurator.Configure(func(connectionHandlers *[]socket2.ConnectionHandlerFunc, trafficHandlers *[]socket2.TrafficHandlerFunc) {
 		*connectionHandlers = append(*connectionHandlers, connection.SayHelloToClientHandler)
 
-		*trafficHandlers = append(*trafficHandlers, connection.PacketHandler{}.Handle)
+		*trafficHandlers = append(*trafficHandlers, handler.Handle)
 	})
 
 	collectedRoutes := CollectRoutes()
@@ -44,6 +53,7 @@ func NewApp(gameConfigurator socket2.Configurator, server *socket.GameServer, ro
 	}
 
 	routeRepository.Routes = routeMap
+	spew.Dump(routeRepository.Routes)
 
 	return &App{GameServer: server}
 }

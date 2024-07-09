@@ -15,14 +15,21 @@ import (
 var AppSet = wire.NewSet(
 	socket.GameServerSet,
 	routing.RouteSet,
+	ProvidePacketHandler,
 )
 
-func NewApp(gameConfigurator apiSocket.Configurator, server *socket.GameServer, routeRepository *routing.Repository) *App {
+func ProvidePacketHandler(router *routing.RouteExecutor) connection.PacketHandler {
+	return connection.PacketHandler{
+		Router: router,
+	}
+}
+
+func NewApp(gameConfigurator apiSocket.Configurator, server *socket.GameServer, routeRepository *routing.Repository, handler connection.PacketHandler) *App {
 	// Configure game server
 	gameConfigurator.Configure(func(connectionHandlers *[]apiSocket.ConnectionHandlerFunc, trafficHandlers *[]apiSocket.TrafficHandlerFunc) {
 		*connectionHandlers = append(*connectionHandlers, connection.SayHelloToClientHandler)
 
-		*trafficHandlers = append(*trafficHandlers, connection.PacketHandler{}.Handle)
+		*trafficHandlers = append(*trafficHandlers, handler.Handle)
 	})
 
 	// Configure routes

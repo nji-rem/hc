@@ -18,8 +18,8 @@ func ProvideRepository() *Repository {
 	return repository
 }
 
-func ProvideRouteExecutor(repository *Repository) RouteExecutor {
-	return RouteExecutor{
+func ProvideRouteExecutor(repository *Repository) *RouteExecutor {
+	return &RouteExecutor{
 		Repository: repository,
 	}
 }

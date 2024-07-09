@@ -25,7 +25,7 @@ func ProvideSocketServer(repository *Repository) *GameServer {
 
 func ProvideSocketRepository() *Repository {
 	repositoryOnce.Do(func() {
-		repository = new(Repository)
+		repository = new(Repository) // heap alloc rlly necessary?
 	})
 
 	return repository
