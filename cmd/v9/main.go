@@ -2,13 +2,17 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+	"os"
 )
 
 func main() {
+	// inefficient, but pretty.
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	addr := fmt.Sprintf("tcp://:%d", 30001)
 
 	application := InitializeApp()
 
-	log.Fatalln(application.Bootstrap(addr))
+	panic(application.Bootstrap(addr))
 }
