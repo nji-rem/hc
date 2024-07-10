@@ -8,12 +8,12 @@ import (
 	routing2 "hc/api/routing"
 	apiSocket "hc/api/socket"
 	"hc/cmd/v9/connection"
-	"hc/pkg/routing"
-	"hc/pkg/socket"
+	"hc/internal/routing"
+	socket2 "hc/internal/socket"
 )
 
 var AppSet = wire.NewSet(
-	socket.GameServerSet,
+	socket2.GameServerSet,
 	routing.RouteSet,
 	ProvidePacketHandler,
 )
@@ -24,7 +24,7 @@ func ProvidePacketHandler(router *routing.RouteExecutor) connection.PacketHandle
 	}
 }
 
-func NewApp(gameConfigurator apiSocket.Configurator, server *socket.GameServer, routeRepository *routing.Repository, handler connection.PacketHandler) *App {
+func NewApp(gameConfigurator apiSocket.Configurator, server *socket2.GameServer, routeRepository *routing.Repository, handler connection.PacketHandler) *App {
 	// Configure game server
 	gameConfigurator.Configure(func(connectionHandlers *[]apiSocket.ConnectionHandlerFunc, trafficHandlers *[]apiSocket.TrafficHandlerFunc) {
 		*connectionHandlers = append(*connectionHandlers, connection.SayHelloToClientHandler)

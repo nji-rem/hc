@@ -7,13 +7,12 @@
 package main
 
 import (
-	"github.com/davecgh/go-spew/spew"
 	"github.com/google/wire"
 	routing2 "hc/api/routing"
 	socket2 "hc/api/socket"
 	"hc/cmd/v9/connection"
-	"hc/pkg/routing"
-	"hc/pkg/socket"
+	"hc/internal/routing"
+	"hc/internal/socket"
 )
 
 // Injectors from wire.go:
@@ -53,7 +52,6 @@ func NewApp(gameConfigurator socket2.Configurator, server *socket.GameServer, ro
 	}
 
 	routeRepository.Routes = routeMap
-	spew.Dump(routeRepository.Routes)
 
 	return &App{GameServer: server}
 }
