@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"context"
 	"github.com/panjf2000/gnet/v2"
-	"hc/pkg/encoding/base64"
-	"hc/pkg/encoding/vl64"
+	"hc/pkg/packet/encoding/base64"
+	"hc/pkg/packet/encoding/vl64"
 )
 
 func HandleSecretKey(ctx context.Context, c gnet.Conn, packet any) error {
