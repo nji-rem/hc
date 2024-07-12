@@ -7,7 +7,7 @@ import (
 )
 
 type App struct {
-	// GameServer contains an instance to the game server socket runner.
+	// GameServer contains an instance to the game server connection runner.
 	GameServer gnet.EventHandler
 }
 

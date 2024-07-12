@@ -8,50 +8,43 @@ package main
 
 import (
 	"github.com/google/wire"
-	routing2 "hc/api/routing"
-	socket2 "hc/api/socket"
-	"hc/cmd/v9/connection"
-	"hc/internal/routing"
-	"hc/internal/socket"
+	"hc/api/packet"
+	"hc/internal/connection"
+	packet2 "hc/internal/packet"
+	"sync"
 )
 
 // Injectors from wire.go:
 
 func InitializeApp() *App {
-	repository := socket.ProvideSocketRepository()
-	gameServer := socket.ProvideSocketServer(repository)
-	routingRepository := routing.ProvideRepository()
-	routeExecutor := routing.ProvideRouteExecutor(routingRepository)
-	packetHandler := ProvidePacketHandler(routeExecutor)
-	app := NewApp(repository, gameServer, routingRepository, packetHandler)
+	resolver := ProvideRouteResolver()
+	wrapFunc := connection.ProvideMiddlewareWrapper()
+	frontController := connection.ProvideFrontController(resolver, wrapFunc)
+	repository := connection.ProvideSocketRepository(frontController)
+	trafficParser := connection.ProvideTrafficParser()
+	requestPool := connection.ProvideRequestPool()
+	trafficManager := connection.ProvideTrafficManager(repository, trafficParser, requestPool)
+	gameSocket := connection.ProvideGameSocket(repository, trafficManager)
+	app := NewApp(gameSocket)
 	return app
 }
 
 // wire.go:
 
-var AppSet = wire.NewSet(socket.GameServerSet, routing.RouteSet, ProvidePacketHandler)
+var AppSet = wire.NewSet(connection.GameServerSet, ProvideRouteResolver, wire.Bind(new(packet.Resolver), new(*packet2.Resolver)))
 
-func ProvidePacketHandler(router *routing.RouteExecutor) connection.PacketHandler {
-	return connection.PacketHandler{
-		Router: router,
-	}
-}
+var routeResolver *packet2.Resolver
 
-func NewApp(gameConfigurator socket2.Configurator, server *socket.GameServer, routeRepository *routing.Repository, handler connection.PacketHandler) *App {
+var routeResolverOnce sync.Once
 
-	gameConfigurator.Configure(func(connectionHandlers *[]socket2.ConnectionHandlerFunc, trafficHandlers *[]socket2.TrafficHandlerFunc) {
-		*connectionHandlers = append(*connectionHandlers, connection.SayHelloToClientHandler)
-
-		*trafficHandlers = append(*trafficHandlers, handler.Handle)
+func ProvideRouteResolver() *packet2.Resolver {
+	routeResolverOnce.Do(func() {
+		routeResolver = packet2.NewResolver(CollectRoutes())
 	})
 
-	collectedRoutes := CollectRoutes()
-	routeMap := make(map[string]routing2.Route, len(collectedRoutes))
-	for _, route := range CollectRoutes() {
-		routeMap[route.Name] = route
-	}
+	return routeResolver
+}
 
-	routeRepository.Routes = routeMap
-
+func NewApp(server *connection.GameSocket) *App {
 	return &App{GameServer: server}
 }

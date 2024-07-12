@@ -2,13 +2,13 @@ package handshake
 
 import (
 	"bytes"
-	"context"
-	"github.com/panjf2000/gnet/v2"
-	"hc/pkg/packet/encoding/base64"
-	"hc/pkg/packet/encoding/vl64"
+	"hc/api/connection"
+	"hc/internal/packet/encoding/base64"
+	"hc/internal/packet/encoding/vl64"
+	"io"
 )
 
-func HandleSecretKey(ctx context.Context, c gnet.Conn, packet any) error {
+func HandleSecretKey(request *connection.Request, writer io.Writer) error {
 	var buf bytes.Buffer
 	buf.WriteString(base64.Encode(257)) // ?
 
@@ -16,7 +16,7 @@ func HandleSecretKey(ctx context.Context, c gnet.Conn, packet any) error {
 
 	buf.WriteByte(1)
 
-	c.Write(buf.Bytes())
+	writer.Write(buf.Bytes())
 
 	buf.Reset()
 
@@ -25,7 +25,7 @@ func HandleSecretKey(ctx context.Context, c gnet.Conn, packet any) error {
 	buf.WriteByte(2)
 	buf.WriteByte(1)
 
-	c.Write(buf.Bytes())
+	writer.Write(buf.Bytes())
 
 	return nil
 }

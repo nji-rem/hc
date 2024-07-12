@@ -2,8 +2,8 @@ package packet
 
 import (
 	"github.com/valyala/bytebufferpool"
-	"hc/pkg/packet/encoding/base64"
-	"hc/pkg/packet/encoding/vl64"
+	"hc/internal/packet/encoding/base64"
+	"hc/internal/packet/encoding/vl64"
 	"io"
 )
 

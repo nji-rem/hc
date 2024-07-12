@@ -1,6 +1,6 @@
-package routing
+package packet
 
-type Route struct {
+type Packet struct {
 	Name       string
 	Handler    HandlerFunc
 	Middleware []MiddlewareFunc

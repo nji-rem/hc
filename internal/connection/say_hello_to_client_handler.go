@@ -1,22 +1,22 @@
 package connection
 
 import (
-	"github.com/panjf2000/gnet/v2"
 	"github.com/rs/zerolog/log"
+	"io"
 )
 
 var (
-	packetHello = []byte{'@', '@', 1, 0}
+	packetHello = []byte{'@', '@', 1}
 )
 
 // SayHelloToClientHandler takes care of sending the "HELLO" packet to the client when the client connects to the
 // server.
-func SayHelloToClientHandler(c gnet.Conn) error {
+func SayHelloToClientHandler(c io.Writer) error {
 	if _, err := c.Write(packetHello); err != nil {
 		return err
 	}
 
-	log.Info().Msgf("Sent HELLO to %s", c.RemoteAddr().String())
+	log.Info().Msg("Sent HELLO to the client")
 
 	return nil
 }
