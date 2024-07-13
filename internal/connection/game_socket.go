@@ -32,8 +32,6 @@ func (g *GameSocket) OnOpen(c gnet.Conn) (out []byte, action gnet.Action) {
 func (g *GameSocket) OnTraffic(c gnet.Conn) gnet.Action {
 	if err := g.TrafficManager.OrchestrateTraffic(c); err != nil {
 		log.Error().Msgf("Unable to handle game server request: %s", err.Error())
-
-		return gnet.Close
 	}
 
 	return gnet.None
