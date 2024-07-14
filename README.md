@@ -1,4 +1,4 @@
-![img.png](img.png)
+![img.png](assets/logo.png)
 
 HC (short for Habbo Club) is a WIP Habbo emulator targeting the v9 client. HC is written in Go, an easy to learn 
 language. 
