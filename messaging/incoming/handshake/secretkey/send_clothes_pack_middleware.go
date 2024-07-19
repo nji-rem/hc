@@ -4,7 +4,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"hc/api/connection"
 	"hc/api/packet"
-	"hc/cmd/v9/messaging/outgoing/handshake"
+	"hc/messaging/outgoing/handshake"
 	"io"
 )
 

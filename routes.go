@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"hc/api/connection"
 	"hc/api/packet"
-	"hc/cmd/v9/messaging/incoming/handshake/secretkey"
+	secretkey2 "hc/messaging/incoming/handshake/secretkey"
 	"io"
 )
 
@@ -13,11 +13,11 @@ func CollectRoutes() []packet.Packet {
 		// Unauthenticated routes
 		{
 			Name:    "CJ",
-			Handler: secretkey.HandleSecretKey,
+			Handler: secretkey2.HandleSecretKey,
 
 			Middleware: []packet.MiddlewareFunc{
-				secretkey.SendClothesPackMiddleware{}.Handle,
-				secretkey.SessionDataMiddleware{}.Handle,
+				secretkey2.SendClothesPackMiddleware{}.Handle,
+				secretkey2.SessionDataMiddleware{}.Handle,
 			},
 		},
 		{
