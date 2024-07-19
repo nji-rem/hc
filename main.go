@@ -1,16 +1,12 @@
 package main
 
 import (
-	"embed"
 	"fmt"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"hc/pkg/database"
 	"os"
 )
-
-//go:embed internal/account/infrastructure/migrations/*.go
-var embedMigrations embed.FS
 
 func main() {
 	// inefficient, but pretty.
