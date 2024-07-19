@@ -1,0 +1,8 @@
+version: '3'
+
+dotenv: ['.env']
+
+tasks:
+  migrate:
+    - echo "Migrating account bounded context"
+    - cd internal/account/infrastructure/migrations && goose up

@@ -27,7 +27,7 @@ func CollectRoutes() []packet.Packet {
 				fmt.Println("name check not implemented yet")
 				return nil
 			},
-			
+
 			Middleware: []packet.MiddlewareFunc{},
 		},
 	}
