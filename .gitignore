@@ -17,7 +17,7 @@
 .idea/**/aws.xml
 
 # Generated files
-.idea/**/contentModel.xml
+.idea/**/contentModel.xl
 
 # Sensitive or high-churn files
 .idea/**/dataSources/
