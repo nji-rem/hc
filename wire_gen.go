@@ -8,6 +8,7 @@ package main
 
 import (
 	"github.com/google/wire"
+	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"hc/api/config"
@@ -15,6 +16,8 @@ import (
 	"hc/internal/connection"
 	packet2 "hc/internal/packet"
 	config2 "hc/pkg/config"
+	"hc/pkg/database"
+	"strconv"
 	"sync"
 )
 
@@ -41,7 +44,7 @@ func InitializeApp() *App {
 // wire.go:
 
 var AppSet = wire.NewSet(connection.GameServerSet, ProvideRouteResolver,
-	ProvideConfig, wire.Bind(new(packet.Resolver), new(*packet2.Resolver)), wire.Bind(new(config.Reader), new(*viper.Viper)),
+	ProvideConfig, wire.Bind(new(packet.Resolver), new(*packet2.Resolver)), wire.Bind(new(config.Reader), new(*viper.Viper)), ProvideDatabase,
 )
 
 var (
@@ -50,6 +53,9 @@ var (
 
 	viperInstance *viper.Viper
 	viperOnce     sync.Once
+
+	databaseConnection     *sqlx.DB
+	databaseConnectionOnce sync.Once
 )
 
 func ProvideRouteResolver() *packet2.Resolver {
@@ -62,7 +68,6 @@ func ProvideRouteResolver() *packet2.Resolver {
 
 func ProvideConfig() *viper.Viper {
 	viperOnce.Do(func() {
-
 		v, err := config2.Build(config2.WithEnvFile(".env"), config2.WithConfigDirectory("config/"))
 
 		if err != nil {
@@ -73,6 +78,33 @@ func ProvideConfig() *viper.Viper {
 	})
 
 	return viperInstance
+}
+
+func ProvideDatabase(config3 config.Reader) *sqlx.DB {
+	databaseConnectionOnce.Do(func() {
+		driver := config3.GetString("database.driver")
+		if driver != "mysql" {
+			log.Fatal().Msgf("Database driver '%s' is unsupported, you can only use 'mysql' at this moment")
+		}
+
+		port, err := strconv.Atoi(config3.GetString("database.drivers.mysql.port"))
+		if err != nil {
+			log.Fatal().Err(err)
+		}
+
+		conn, err := database.NewMySQLConnection(database.ConnectionInfo{
+			Host:     config3.GetString("database.drivers.mysql.host"),
+			User:     config3.GetString("database.drivers.mysql.user"),
+			Password: config3.GetString("database.drivers.mysql.password"),
+			Port:     port,
+			DBName:   config3.GetString("database.drivers.mysql.dbname"),
+		})
+		log.Info().Msg("Configured database pool")
+
+		databaseConnection = conn
+	})
+
+	return databaseConnection
 }
 
 func NewApp(server *connection.GameSocket, viper2 *viper.Viper) *App {
