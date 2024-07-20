@@ -15,3 +15,10 @@ tasks:
     - wire .
     - echo "Starting server"
     - go run .
+
+  build-binary:
+    - echo "Building dependencies"
+    - wire .
+    - echo "Building app..."
+    - go build -o HcServer .
+    - echo "Binary named HcServer created successfully. You might want to chmod it to an executable."
