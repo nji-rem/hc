@@ -1,6 +1,5 @@
 -- +goose Up
 -- +goose StatementBegin
---- +goose up
 CREATE TABLE accounts(
     id int(11) NOT NULL AUTO_INCREMENT,
     username varchar(255) not null,

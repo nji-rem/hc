@@ -6,3 +6,12 @@ tasks:
   migrate:
     - echo "Migrating account bounded context"
     - cd internal/account/infrastructure/migrations && goose up
+
+  goose:
+    - goose {{.CLI_ARGS}}
+
+  run:
+    - echo "Building dependencies"
+    - wire .
+    - echo "Starting server"
+    - go run .
