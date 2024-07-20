@@ -8,9 +8,12 @@ package main
 
 import (
 	"github.com/google/wire"
+	"github.com/rs/zerolog/log"
+	"github.com/spf13/viper"
 	"hc/api/packet"
 	"hc/internal/connection"
 	packet2 "hc/internal/packet"
+	"hc/pkg/config"
 	"sync"
 )
 
@@ -31,11 +34,12 @@ func InitializeApp() *App {
 
 // wire.go:
 
-var AppSet = wire.NewSet(connection.GameServerSet, ProvideRouteResolver, wire.Bind(new(packet.Resolver), new(*packet2.Resolver)))
+var AppSet = wire.NewSet(connection.GameServerSet, ProvideRouteResolver, wire.Bind(new(packet.Resolver), new(*packet2.Resolver)), ProvideConfig)
 
-var routeResolver *packet2.Resolver
-
-var routeResolverOnce sync.Once
+var (
+	routeResolver     *packet2.Resolver
+	routeResolverOnce sync.Once
+)
 
 func ProvideRouteResolver() *packet2.Resolver {
 	routeResolverOnce.Do(func() {
@@ -43,6 +47,16 @@ func ProvideRouteResolver() *packet2.Resolver {
 	})
 
 	return routeResolver
+}
+
+func ProvideConfig() *viper.Viper {
+	v, err := config.Build(config.WithConfigDirectory("config/"), config.WithEnvFile(".env"))
+
+	if err != nil {
+		log.Fatal().Msgf("unable to initialize config: %s", err.Error())
+	}
+
+	return v
 }
 
 func NewApp(server *connection.GameSocket) *App {

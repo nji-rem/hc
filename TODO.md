@@ -6,5 +6,5 @@
 - [ ] Sessions
 - [ ] Database
   - [ ] Set up database connection / driver
-  - [ ] 'Driverless' database migrations
+  - [X] 'Driverless' database migrations
 - [ ] Account bounded context
