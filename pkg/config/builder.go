@@ -11,6 +11,7 @@ import (
 
 type OptionFunc func(v *viper.Viper) error
 
+// WithConfigDirectory reads a bunch of yaml config files. Only yaml is supported.
 func WithConfigDirectory(directory string) OptionFunc {
 	return func(v *viper.Viper) error {
 		return filepath.Walk(directory, func(path string, info fs.FileInfo, err error) error {
@@ -23,7 +24,13 @@ func WithConfigDirectory(directory string) OptionFunc {
 			}
 
 			v.SetConfigFile(path)
-			if err := v.ReadInConfig(); err != nil {
+			if err := v.MergeInConfig(); err != nil {
+				return err
+			}
+
+			temp := viper.New()
+			temp.SetConfigFile(path)
+			if err := temp.ReadInConfig(); err != nil {
 				return err
 			}
 
@@ -41,6 +48,9 @@ func WithEnvFile(envFile string) OptionFunc {
 		}
 
 		v.AutomaticEnv()
+		v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
+		log.Info().Msg("Loaded dotenv environment variables")
 
 		return nil
 	}
@@ -48,6 +58,8 @@ func WithEnvFile(envFile string) OptionFunc {
 
 func Build(opts ...OptionFunc) (*viper.Viper, error) {
 	v := viper.New()
+	v.SetConfigType("yaml")
+
 	for _, opt := range opts {
 		if err := opt(v); err != nil {
 			return nil, err

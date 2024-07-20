@@ -1,2 +1,4 @@
-short_name: Habbo
-hotel_name: "Habbo Hotel"
+app:
+  name: Habbo
+  socket_addr: "tcp://:30001"
+  profiler_enabled: false

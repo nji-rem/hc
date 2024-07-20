@@ -7,25 +7,28 @@ import (
 	"github.com/google/wire"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
+	apiConfig "hc/api/config"
 	apiPacket "hc/api/packet"
 	"hc/internal/connection"
 	"hc/internal/packet"
+	"hc/pkg/config"
 	"sync"
 )
 
 var AppSet = wire.NewSet(
 	connection.GameServerSet,
 	ProvideRouteResolver,
-	wire.Bind(new(apiPacket.Resolver), new(*packet.Resolver)),
 	ProvideConfig,
+	wire.Bind(new(apiPacket.Resolver), new(*packet.Resolver)),
+	wire.Bind(new(apiConfig.Reader), new(*viper.Viper)),
 )
 
 var (
 	routeResolver     *packet.Resolver
 	routeResolverOnce sync.Once
 
-	config     *viper.Viper
-	configOnce sync.Once
+	viperInstance *viper.Viper
+	viperOnce     sync.Once
 )
 
 func ProvideRouteResolver() *packet.Resolver {
@@ -37,27 +40,27 @@ func ProvideRouteResolver() *packet.Resolver {
 }
 
 func ProvideConfig() *viper.Viper {
-	configOnce.Do(func() {
+	viperOnce.Do(func() {
+
 		v, err := config.Build(
-			config.WithConfigDirectory("config/"),
-			config.WithEnvFile(".env"))
+			config.WithEnvFile(".env"),
+			config.WithConfigDirectory("config/"))
 
 		if err != nil {
-			log.Fatal().Msgf("unable to initialize config: %s", err.Error())
+			log.Fatal().Msgf("unable to initialize viper: %s", err.Error())
 		}
 
-		config = v
+		viperInstance = v
 	})
-	
-	return v
+
+	return viperInstance
 }
 
-func NewApp(server *connection.GameSocket) *App {
-	return &App{GameServer: server}
+func NewApp(server *connection.GameSocket, viper *viper.Viper) *App {
+	return &App{GameServer: server, Config: viper}
 }
 
 func InitializeApp() *App {
 	wire.Build(NewApp, AppSet)
-
 	return &App{}
 }

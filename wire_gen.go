@@ -10,11 +10,16 @@ import (
 	"github.com/google/wire"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
+	"hc/api/config"
 	"hc/api/packet"
 	"hc/internal/connection"
 	packet2 "hc/internal/packet"
-	"hc/pkg/config"
+	config2 "hc/pkg/config"
 	"sync"
+)
+
+import (
+	_ "net/http/pprof"
 )
 
 // Injectors from wire.go:
@@ -28,17 +33,23 @@ func InitializeApp() *App {
 	requestPool := connection.ProvideRequestPool()
 	trafficManager := connection.ProvideTrafficManager(repository, trafficParser, requestPool)
 	gameSocket := connection.ProvideGameSocket(repository, trafficManager)
-	app := NewApp(gameSocket)
+	viper := ProvideConfig()
+	app := NewApp(gameSocket, viper)
 	return app
 }
 
 // wire.go:
 
-var AppSet = wire.NewSet(connection.GameServerSet, ProvideRouteResolver, wire.Bind(new(packet.Resolver), new(*packet2.Resolver)), ProvideConfig)
+var AppSet = wire.NewSet(connection.GameServerSet, ProvideRouteResolver,
+	ProvideConfig, wire.Bind(new(packet.Resolver), new(*packet2.Resolver)), wire.Bind(new(config.Reader), new(*viper.Viper)),
+)
 
 var (
 	routeResolver     *packet2.Resolver
 	routeResolverOnce sync.Once
+
+	viperInstance *viper.Viper
+	viperOnce     sync.Once
 )
 
 func ProvideRouteResolver() *packet2.Resolver {
@@ -50,15 +61,20 @@ func ProvideRouteResolver() *packet2.Resolver {
 }
 
 func ProvideConfig() *viper.Viper {
-	v, err := config.Build(config.WithConfigDirectory("config/"), config.WithEnvFile(".env"))
+	viperOnce.Do(func() {
 
-	if err != nil {
-		log.Fatal().Msgf("unable to initialize config: %s", err.Error())
-	}
+		v, err := config2.Build(config2.WithEnvFile(".env"), config2.WithConfigDirectory("config/"))
 
-	return v
+		if err != nil {
+			log.Fatal().Msgf("unable to initialize viper: %s", err.Error())
+		}
+
+		viperInstance = v
+	})
+
+	return viperInstance
 }
 
-func NewApp(server *connection.GameSocket) *App {
-	return &App{GameServer: server}
+func NewApp(server *connection.GameSocket, viper2 *viper.Viper) *App {
+	return &App{GameServer: server, Config: viper2}
 }

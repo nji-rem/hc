@@ -1,11 +1,12 @@
-driver: mysql
-drivers:
-  production:
-    name: mysql
-    host: 127.0.0.1
-    port: 3306
-    user: root
-    password: hallo123
-    dbname: hcdb
-  testing:
-    name: sqlite3
+database:
+  driver: mysql
+  drivers:
+    mysql:
+      name: mysql
+      host: 127.0.0.1
+      port: 3306
+      user: root
+      password: example
+      dbname: example
+    testing:
+      name: sqlite3
