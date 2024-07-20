@@ -36,11 +36,13 @@ func (a *App) Run(addr string) error {
 // startProfilerIfEnabled starts the pprof profiler if enabled. It's encouraged to keep the profiler active on production
 // environments in order to locate potential bottlenecks.
 func (a *App) startProfilerIfEnabled() {
-	profilerEnabled := a.Config.Get("app.profiler_enabled")
-	if profilerEnabled == nil || !profilerEnabled.(bool) {
-		log.Warn().Msg("Profiler is disabled! It's recommended to enable it on production environments.")
+	profilerEnabled := a.Config.GetBool("app.profiler_enabled")
+	if !profilerEnabled {
+		log.Warn().Msg("Profiler is disabled! Enabling it is recommended. Enable it in config/app.yaml or set APP_PROFILER_ENABLED=true")
 		return
 	}
+
+	log.Info().Msg("Profiler (pprof) enabled")
 
 	go func() {
 		if err := http.ListenAndServe("localhost:8080", nil); err != nil {
