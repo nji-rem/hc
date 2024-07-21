@@ -1,34 +1,29 @@
 package main
 
 import (
+	"github.com/jmoiron/sqlx"
 	"github.com/panjf2000/gnet/v2"
 	"github.com/rs/zerolog/log"
 	"hc/api/config"
 	"net/http"
 	_ "net/http/pprof"
-	"sync"
 )
 
 type App struct {
 	Config     config.Reader
 	GameServer gnet.EventHandler
+	DB         *sqlx.DB
 }
 
 func (a *App) Run(addr string) error {
+	a.checkDatabase()
 	a.startProfilerIfEnabled()
 
 	log.Info().Msgf("Starting %s on address %s", a.Config.GetString("app.name"), addr)
 
-	var wg sync.WaitGroup
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		if err := gnet.Run(a.GameServer, addr, gnet.WithMulticore(true)); err != nil {
-			log.Error().Msgf("unable to execute game server: %s", err.Error())
-		}
-	}()
-
-	wg.Wait()
+	if err := gnet.Run(a.GameServer, addr, gnet.WithMulticore(true)); err != nil {
+		log.Error().Msgf("unable to execute game server: %s", err.Error())
+	}
 
 	return nil
 }
@@ -49,4 +44,12 @@ func (a *App) startProfilerIfEnabled() {
 			log.Error().Msgf("Profiler stopped! Err: %s", err.Error())
 		}
 	}()
+}
+
+func (a *App) checkDatabase() {
+	if err := a.DB.Ping(); err != nil {
+		log.Fatal().Msgf("Server stopped! Database connection is not available, err: %s", err.Error())
+	}
+
+	log.Info().Msg("Database connection is established")
 }

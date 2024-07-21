@@ -4,7 +4,7 @@
 - [X] Packet middleware
 - [X] Config & environment variables management
 - [ ] Sessions
-- [ ] Database
-  - [ ] Set up database connection / driver
+- [X] Database
+  - [X] Set up database connection / driver
   - [X] 'Driverless' database migrations
 - [ ] Account bounded context

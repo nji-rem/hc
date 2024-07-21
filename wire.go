@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/viper"
 	apiConfig "hc/api/config"
 	apiPacket "hc/api/packet"
+	"hc/internal/account"
 	"hc/internal/connection"
 	"hc/internal/packet"
 	"hc/pkg/config"
@@ -24,9 +25,11 @@ var AppSet = wire.NewSet(
 	ProvideConfig,
 	wire.Bind(new(apiPacket.Resolver), new(*packet.Resolver)),
 	wire.Bind(new(apiConfig.Reader), new(*viper.Viper)),
+	account.Set,
 	ProvideDatabase,
 )
 
+// singletons
 var (
 	routeResolver     *packet.Resolver
 	routeResolverOnce sync.Once
@@ -82,6 +85,10 @@ func ProvideDatabase(config apiConfig.Reader) *sqlx.DB {
 			DBName:   config.GetString("database.drivers.mysql.dbname"),
 		})
 
+		if err != nil {
+			log.Fatal().Msgf("Unable to connect to the database! Reason: %s", err.Error())
+		}
+
 		log.Info().Msg("Configured database pool")
 
 		databaseConnection = conn
@@ -90,8 +97,8 @@ func ProvideDatabase(config apiConfig.Reader) *sqlx.DB {
 	return databaseConnection
 }
 
-func NewApp(server *connection.GameSocket, viper *viper.Viper) *App {
-	return &App{GameServer: server, Config: viper}
+func NewApp(server *connection.GameSocket, viper *viper.Viper, db *sqlx.DB) *App {
+	return &App{GameServer: server, Config: viper, DB: db}
 }
 
 func InitializeApp() *App {

@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/viper"
 	"hc/api/config"
 	"hc/api/packet"
+	"hc/internal/account"
 	"hc/internal/connection"
 	packet2 "hc/internal/packet"
 	config2 "hc/pkg/config"
@@ -37,16 +38,18 @@ func InitializeApp() *App {
 	trafficManager := connection.ProvideTrafficManager(repository, trafficParser, requestPool)
 	gameSocket := connection.ProvideGameSocket(repository, trafficManager)
 	viper := ProvideConfig()
-	app := NewApp(gameSocket, viper)
+	db := ProvideDatabase(viper)
+	app := NewApp(gameSocket, viper, db)
 	return app
 }
 
 // wire.go:
 
 var AppSet = wire.NewSet(connection.GameServerSet, ProvideRouteResolver,
-	ProvideConfig, wire.Bind(new(packet.Resolver), new(*packet2.Resolver)), wire.Bind(new(config.Reader), new(*viper.Viper)), ProvideDatabase,
+	ProvideConfig, wire.Bind(new(packet.Resolver), new(*packet2.Resolver)), wire.Bind(new(config.Reader), new(*viper.Viper)), account.Set, ProvideDatabase,
 )
 
+// singletons
 var (
 	routeResolver     *packet2.Resolver
 	routeResolverOnce sync.Once
@@ -99,6 +102,10 @@ func ProvideDatabase(config3 config.Reader) *sqlx.DB {
 			Port:     port,
 			DBName:   config3.GetString("database.drivers.mysql.dbname"),
 		})
+
+		if err != nil {
+			log.Fatal().Msgf("Unable to connect to the database! Reason: %s", err.Error())
+		}
 		log.Info().Msg("Configured database pool")
 
 		databaseConnection = conn
@@ -107,6 +114,6 @@ func ProvideDatabase(config3 config.Reader) *sqlx.DB {
 	return databaseConnection
 }
 
-func NewApp(server *connection.GameSocket, viper2 *viper.Viper) *App {
-	return &App{GameServer: server, Config: viper2}
+func NewApp(server *connection.GameSocket, viper2 *viper.Viper, db *sqlx.DB) *App {
+	return &App{GameServer: server, Config: viper2, DB: db}
 }
