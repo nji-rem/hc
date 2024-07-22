@@ -9,6 +9,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"hc/api/account/availability"
+	"hc/api/account/password"
 	apiConfig "hc/api/config"
 	apiPacket "hc/api/packet"
 	"hc/internal/account"
@@ -123,10 +124,20 @@ func NewNameCheckHandler(availableFunc availability.UsernameAvailableFunc) regis
 	return registration.NewNameCheckHandler(availableFunc)
 }
 
+func NewPasswordCheckHandler(validationFunc password.ValidationFunc) registration.PasswordVerifyHandler {
+	return registration.PasswordVerifyHandler{PasswordValidator: validationFunc}
+}
+
 func InitializeNameCheckHandler() registration.NameCheckHandler {
 	wire.Build(NewNameCheckHandler, account.Set, ConfigSet, DatabaseSet)
 
 	return registration.NameCheckHandler{}
+}
+
+func InitializePasswordVerifyHandler() registration.PasswordVerifyHandler {
+	wire.Build(NewPasswordCheckHandler, account.Set)
+
+	return registration.PasswordVerifyHandler{}
 }
 
 func InitializeApp() *App {

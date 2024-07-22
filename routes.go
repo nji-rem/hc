@@ -23,5 +23,10 @@ func CollectRoutes() []packet.Packet {
 
 			Middleware: []packet.MiddlewareFunc{},
 		},
+		{
+			Name:       incoming.PasswordCheck,
+			Handler:    InitializePasswordVerifyHandler().Handle,
+			Middleware: []packet.MiddlewareFunc{},
+		},
 	}
 }

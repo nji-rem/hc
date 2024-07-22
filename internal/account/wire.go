@@ -5,6 +5,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
 	"hc/api/account/availability"
+	"hc/api/account/password"
 	apiStore "hc/api/account/store"
 	"hc/internal/account/application"
 	"hc/internal/account/infrastructure/store"
@@ -15,6 +16,7 @@ var Set = wire.NewSet(
 	ProvidePlayerStore,
 	wire.Bind(new(apiStore.Player), new(*store.Player)),
 	ProvideCheckNameAvailabilityHandler,
+	ProvidePasswordValidator,
 )
 
 // playerStore can be a singleton; *sqlx.DB is thread-safe and is intended to be used in concurrent environments.
@@ -35,4 +37,8 @@ func ProvideCheckNameAvailabilityHandler(store apiStore.Player) availability.Use
 	handler := application.CheckNameAvailabilityHandler{Store: store}
 
 	return handler.Handle
+}
+
+func ProvidePasswordValidator() password.ValidationFunc {
+	return application.ValidatePassword
 }

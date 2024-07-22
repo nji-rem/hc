@@ -1,6 +1,7 @@
 package incoming
 
 const (
-	SecretKey = "CJ"
-	NameCheck = "@j"
+	SecretKey     = "CJ"
+	NameCheck     = "@j"
+	PasswordCheck = "CK"
 )

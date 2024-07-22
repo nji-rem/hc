@@ -12,6 +12,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 	"hc/api/account/availability"
+	"hc/api/account/password"
 	"hc/api/config"
 	"hc/api/packet"
 	"hc/internal/account"
@@ -37,6 +38,12 @@ func InitializeNameCheckHandler() registration.NameCheckHandler {
 	usernameAvailableFunc := account.ProvideCheckNameAvailabilityHandler(player)
 	nameCheckHandler := NewNameCheckHandler(usernameAvailableFunc)
 	return nameCheckHandler
+}
+
+func InitializePasswordVerifyHandler() registration.PasswordVerifyHandler {
+	validationFunc := account.ProvidePasswordValidator()
+	passwordVerifyHandler := NewPasswordCheckHandler(validationFunc)
+	return passwordVerifyHandler
 }
 
 func InitializeApp() *App {
@@ -148,4 +155,8 @@ func NewApp(packetResolver packet.Resolver, server *connection.GameSocket, viper
 
 func NewNameCheckHandler(availableFunc availability.UsernameAvailableFunc) registration.NameCheckHandler {
 	return registration.NewNameCheckHandler(availableFunc)
+}
+
+func NewPasswordCheckHandler(validationFunc password.ValidationFunc) registration.PasswordVerifyHandler {
+	return registration.PasswordVerifyHandler{PasswordValidator: validationFunc}
 }
