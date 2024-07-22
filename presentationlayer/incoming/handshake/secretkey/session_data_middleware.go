@@ -5,7 +5,6 @@ import (
 	"hc/api/connection"
 	"hc/api/packet"
 	"hc/presentationlayer/outgoing/handshake"
-	"io"
 )
 
 // SessionDataMiddleware is responsible for sending session data to the client after the secret key handler is finished
@@ -13,14 +12,14 @@ import (
 type SessionDataMiddleware struct{}
 
 func (s SessionDataMiddleware) Handle(next packet.HandlerFunc) packet.HandlerFunc {
-	return func(request *connection.Request, writer io.Writer) error {
-		err := next(request, writer)
+	return func(request *connection.Request, response chan<- connection.Response) error {
+		err := next(request, response)
 		if err != nil {
 			return err
 		}
 
 		// dependency injection :)
-		_, _ = handshake.NewSessionParametersComposer().WriteTo(writer)
+		response <- handshake.NewSessionParametersComposer()
 
 		log.Debug().Msg("Session data sent to the client")
 

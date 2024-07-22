@@ -1,6 +1,7 @@
 package connection
 
 import (
+	"github.com/rs/zerolog/log"
 	"hc/api/connection"
 	"hc/api/packet"
 	"io"
@@ -21,6 +22,30 @@ func (f FrontController) Handle(request *connection.Request, writer io.Writer) e
 	// Wrap middleware
 	handler := f.WrapMiddleware(route.Handler, route.Middleware)
 
+	// Create a goroutine that writes to the writer
+	ch := make(chan connection.Response)
+	defer close(ch)
+
+	go func(writer io.Writer) {
+	MainLoop:
+		for {
+			select {
+			case data, ok := <-ch:
+				if !ok {
+					log.Debug().Msg("Response channel closed for incoming request")
+					break MainLoop
+				}
+
+				if _, err := writer.Write(data.Body()); err != nil {
+					log.Error().Msgf("unable to send message response: %s", err.Error())
+					break MainLoop
+				}
+
+				log.Info().Msgf("[S->C] Sent %x", data)
+			}
+		}
+	}(writer)
+
 	// Execute the handler
-	return handler(request, writer)
+	return handler(request, ch)
 }

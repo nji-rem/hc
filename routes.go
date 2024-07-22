@@ -8,7 +8,6 @@ import (
 
 func CollectRoutes() []packet.Packet {
 	return []packet.Packet{
-		// Unauthenticated routes
 		{
 			Name:    incoming.SecretKey,
 			Handler: secretkey.HandleSecretKey,

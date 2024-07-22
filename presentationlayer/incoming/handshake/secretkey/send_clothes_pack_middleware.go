@@ -5,20 +5,19 @@ import (
 	"hc/api/connection"
 	"hc/api/packet"
 	"hc/presentationlayer/outgoing/handshake"
-	"io"
 )
 
 type SendClothesPackMiddleware struct{}
 
 func (s SendClothesPackMiddleware) Handle(next packet.HandlerFunc) packet.HandlerFunc {
-	return func(request *connection.Request, writer io.Writer) error {
-		err := next(request, writer)
+	return func(request *connection.Request, response chan<- connection.Response) error {
+		err := next(request, response)
 		if err != nil {
 			return err
 		}
 
 		// dependency injection :)
-		_, _ = handshake.NewDefaultClothesPack().WriteTo(writer)
+		response <- handshake.NewDefaultClothesPack()
 
 		log.Debug().Msg("Default clothes pack sent to the client")
 

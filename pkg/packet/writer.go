@@ -4,7 +4,6 @@ import (
 	"github.com/valyala/bytebufferpool"
 	"hc/pkg/encoding/base64"
 	"hc/pkg/encoding/vl64"
-	"io"
 )
 
 type Writer struct {
@@ -41,9 +40,9 @@ func (w *Writer) AppendString(str string) error {
 	return nil
 }
 
-func (w *Writer) WriteTo(writer io.Writer) (n int64, err error) {
+func (w *Writer) Bytes() ([]byte, error) {
 	if err := w.Buffer.WriteByte(1); err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	defer func() {
@@ -51,10 +50,7 @@ func (w *Writer) WriteTo(writer io.Writer) (n int64, err error) {
 		w.Buffer.B = w.Buffer.B[:offset]
 	}()
 
-	bytesWritten, err := writer.Write(w.Buffer.B)
-	if err != nil {
-		return 0, err
-	}
+	b := w.Buffer.B
 
-	return int64(bytesWritten), nil
+	return b, nil
 }
