@@ -8,8 +8,8 @@ var (
 )
 
 const (
-	MinPasswordSize = 5
-	MaxPasswordSize = 64 // TODO: Check if the UI allows passphrases
+	MinPasswordSize = 6
+	MaxPasswordSize = 15
 )
 
 func ValidatePassword(password string) error {
