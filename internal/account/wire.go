@@ -4,7 +4,9 @@ import (
 	"github.com/google/wire"
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
+	"hc/api/account/availability"
 	apiStore "hc/api/account/store"
+	"hc/internal/account/application"
 	"hc/internal/account/infrastructure/store"
 	"sync"
 )
@@ -12,6 +14,7 @@ import (
 var Set = wire.NewSet(
 	ProvidePlayerStore,
 	wire.Bind(new(apiStore.Player), new(*store.Player)),
+	ProvideCheckNameAvailabilityHandler,
 )
 
 // playerStore can be a singleton; *sqlx.DB is thread-safe and is intended to be used in concurrent environments.
@@ -26,4 +29,10 @@ func ProvidePlayerStore(db *sqlx.DB) *store.Player {
 	log.Info().Msg("Loaded player store")
 
 	return playerStore
+}
+
+func ProvideCheckNameAvailabilityHandler(store apiStore.Player) availability.UsernameAvailableFunc {
+	handler := application.CheckNameAvailabilityHandler{Store: store}
+
+	return handler.Handle
 }

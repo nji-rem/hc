@@ -8,6 +8,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
+	"hc/api/account/availability"
 	apiConfig "hc/api/config"
 	apiPacket "hc/api/packet"
 	"hc/internal/account"
@@ -15,17 +16,30 @@ import (
 	"hc/internal/packet"
 	"hc/pkg/config"
 	"hc/pkg/database"
+	"hc/presentationlayer/incoming/registration"
 	"strconv"
 	"sync"
 )
 
 var AppSet = wire.NewSet(
 	connection.GameServerSet,
-	ProvideRouteResolver,
-	ProvideConfig,
-	wire.Bind(new(apiPacket.Resolver), new(*packet.Resolver)),
-	wire.Bind(new(apiConfig.Reader), new(*viper.Viper)),
 	account.Set,
+	ConfigSet,
+	RouteSet,
+	DatabaseSet,
+)
+
+var RouteSet = wire.NewSet(
+	ProvideRouteResolver,
+	wire.Bind(new(apiPacket.Resolver), new(*packet.Resolver)),
+)
+
+var ConfigSet = wire.NewSet(
+	ProvideConfig,
+	wire.Bind(new(apiConfig.Reader), new(*viper.Viper)),
+)
+
+var DatabaseSet = wire.NewSet(
 	ProvideDatabase,
 )
 
@@ -43,7 +57,7 @@ var (
 
 func ProvideRouteResolver() *packet.Resolver {
 	routeResolverOnce.Do(func() {
-		routeResolver = packet.NewResolver(CollectRoutes())
+		routeResolver = &packet.Resolver{}
 	})
 
 	return routeResolver
@@ -97,8 +111,22 @@ func ProvideDatabase(config apiConfig.Reader) *sqlx.DB {
 	return databaseConnection
 }
 
-func NewApp(server *connection.GameSocket, viper *viper.Viper, db *sqlx.DB) *App {
-	return &App{GameServer: server, Config: viper, DB: db}
+func ProvideNameCheckHandler(availableFunc availability.UsernameAvailableFunc) registration.NameCheckHandler {
+	return registration.NewNameCheckHandler(availableFunc)
+}
+
+func NewApp(packetResolver apiPacket.Resolver, server *connection.GameSocket, viper *viper.Viper, db *sqlx.DB) *App {
+	return &App{PacketResolver: packetResolver, GameServer: server, Config: viper, DB: db}
+}
+
+func NewNameCheckHandler(availableFunc availability.UsernameAvailableFunc) registration.NameCheckHandler {
+	return registration.NewNameCheckHandler(availableFunc)
+}
+
+func InitializeNameCheckHandler() registration.NameCheckHandler {
+	wire.Build(NewNameCheckHandler, account.Set, ConfigSet, DatabaseSet)
+
+	return registration.NameCheckHandler{}
 }
 
 func InitializeApp() *App {

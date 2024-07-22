@@ -1,12 +1,9 @@
 package main
 
 import (
-	"fmt"
-	"hc/api/connection"
 	"hc/api/packet"
 	"hc/presentationlayer/incoming"
 	"hc/presentationlayer/incoming/handshake/secretkey"
-	"io"
 )
 
 func CollectRoutes() []packet.Packet {
@@ -22,11 +19,8 @@ func CollectRoutes() []packet.Packet {
 			},
 		},
 		{
-			Name: incoming.NameCheck,
-			Handler: func(request *connection.Request, writer io.Writer) error {
-				fmt.Println("name check not implemented yet")
-				return nil
-			},
+			Name:    incoming.NameCheck,
+			Handler: InitializeNameCheckHandler().Handle,
 
 			Middleware: []packet.MiddlewareFunc{},
 		},

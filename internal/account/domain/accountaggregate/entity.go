@@ -1,8 +1,8 @@
-package domain
+package accountaggregate
 
-type Account struct {
+type Entity struct {
 	ID       int
-	Username string
+	Username Username
 	Password string
 	Look     string
 	Motto    string

@@ -5,17 +5,25 @@ import (
 	"github.com/panjf2000/gnet/v2"
 	"github.com/rs/zerolog/log"
 	"hc/api/config"
+	"hc/api/packet"
 	"net/http"
 	_ "net/http/pprof"
 )
 
 type App struct {
-	Config     config.Reader
-	GameServer gnet.EventHandler
-	DB         *sqlx.DB
+	PacketResolver packet.Resolver
+	Config         config.Reader
+	GameServer     gnet.EventHandler
+	DB             *sqlx.DB
 }
 
 func (a *App) Run(addr string) error {
+	routes := CollectRoutes()
+
+	a.PacketResolver.SetPackets(routes)
+
+	log.Info().Msgf("Registered %d packets", len(routes))
+
 	a.checkDatabase()
 	a.startProfilerIfEnabled()
 

@@ -11,6 +11,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
+	"hc/api/account/availability"
 	"hc/api/config"
 	"hc/api/packet"
 	"hc/internal/account"
@@ -18,6 +19,7 @@ import (
 	packet2 "hc/internal/packet"
 	config2 "hc/pkg/config"
 	"hc/pkg/database"
+	"hc/presentationlayer/incoming/registration"
 	"strconv"
 	"sync"
 )
@@ -27,6 +29,15 @@ import (
 )
 
 // Injectors from wire.go:
+
+func InitializeNameCheckHandler() registration.NameCheckHandler {
+	viper := ProvideConfig()
+	db := ProvideDatabase(viper)
+	player := account.ProvidePlayerStore(db)
+	usernameAvailableFunc := account.ProvideCheckNameAvailabilityHandler(player)
+	nameCheckHandler := NewNameCheckHandler(usernameAvailableFunc)
+	return nameCheckHandler
+}
 
 func InitializeApp() *App {
 	resolver := ProvideRouteResolver()
@@ -39,14 +50,27 @@ func InitializeApp() *App {
 	gameSocket := connection.ProvideGameSocket(repository, trafficManager)
 	viper := ProvideConfig()
 	db := ProvideDatabase(viper)
-	app := NewApp(gameSocket, viper, db)
+	app := NewApp(resolver, gameSocket, viper, db)
 	return app
 }
 
 // wire.go:
 
-var AppSet = wire.NewSet(connection.GameServerSet, ProvideRouteResolver,
-	ProvideConfig, wire.Bind(new(packet.Resolver), new(*packet2.Resolver)), wire.Bind(new(config.Reader), new(*viper.Viper)), account.Set, ProvideDatabase,
+var AppSet = wire.NewSet(connection.GameServerSet, account.Set, ConfigSet,
+	RouteSet,
+	DatabaseSet,
+)
+
+var RouteSet = wire.NewSet(
+	ProvideRouteResolver, wire.Bind(new(packet.Resolver), new(*packet2.Resolver)),
+)
+
+var ConfigSet = wire.NewSet(
+	ProvideConfig, wire.Bind(new(config.Reader), new(*viper.Viper)),
+)
+
+var DatabaseSet = wire.NewSet(
+	ProvideDatabase,
 )
 
 // singletons
@@ -63,7 +87,7 @@ var (
 
 func ProvideRouteResolver() *packet2.Resolver {
 	routeResolverOnce.Do(func() {
-		routeResolver = packet2.NewResolver(CollectRoutes())
+		routeResolver = &packet2.Resolver{}
 	})
 
 	return routeResolver
@@ -114,6 +138,14 @@ func ProvideDatabase(config3 config.Reader) *sqlx.DB {
 	return databaseConnection
 }
 
-func NewApp(server *connection.GameSocket, viper2 *viper.Viper, db *sqlx.DB) *App {
-	return &App{GameServer: server, Config: viper2, DB: db}
+func ProvideNameCheckHandler(availableFunc availability.UsernameAvailableFunc) registration.NameCheckHandler {
+	return registration.NewNameCheckHandler(availableFunc)
+}
+
+func NewApp(packetResolver packet.Resolver, server *connection.GameSocket, viper2 *viper.Viper, db *sqlx.DB) *App {
+	return &App{PacketResolver: packetResolver, GameServer: server, Config: viper2, DB: db}
+}
+
+func NewNameCheckHandler(availableFunc availability.UsernameAvailableFunc) registration.NameCheckHandler {
+	return registration.NewNameCheckHandler(availableFunc)
 }
