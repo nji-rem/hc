@@ -21,6 +21,7 @@ import (
 	config2 "hc/pkg/config"
 	"hc/pkg/database"
 	"hc/presentationlayer/incoming/registration"
+	"hc/presentationlayer/incoming/registration/register"
 	"strconv"
 	"sync"
 )
@@ -30,6 +31,11 @@ import (
 )
 
 // Injectors from wire.go:
+
+func InitializeRegisterHandler() register.Handler {
+	handler := NewRegisterHandler()
+	return handler
+}
 
 func InitializeNameCheckHandler() registration.NameCheckHandler {
 	viper := ProvideConfig()
@@ -159,4 +165,8 @@ func NewNameCheckHandler(availableFunc availability.UsernameAvailableFunc) regis
 
 func NewPasswordCheckHandler(validationFunc password.ValidationFunc) registration.PasswordVerifyHandler {
 	return registration.PasswordVerifyHandler{PasswordValidator: validationFunc}
+}
+
+func NewRegisterHandler() register.Handler {
+	return register.Handler{}
 }

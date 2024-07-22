@@ -18,6 +18,7 @@ import (
 	"hc/pkg/config"
 	"hc/pkg/database"
 	"hc/presentationlayer/incoming/registration"
+	"hc/presentationlayer/incoming/registration/register"
 	"strconv"
 	"sync"
 )
@@ -126,6 +127,16 @@ func NewNameCheckHandler(availableFunc availability.UsernameAvailableFunc) regis
 
 func NewPasswordCheckHandler(validationFunc password.ValidationFunc) registration.PasswordVerifyHandler {
 	return registration.PasswordVerifyHandler{PasswordValidator: validationFunc}
+}
+
+func NewRegisterHandler() register.Handler {
+	return register.Handler{}
+}
+
+func InitializeRegisterHandler() register.Handler {
+	wire.Build(NewRegisterHandler)
+
+	return register.Handler{}
 }
 
 func InitializeNameCheckHandler() registration.NameCheckHandler {

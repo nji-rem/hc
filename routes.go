@@ -41,5 +41,10 @@ func CollectRoutes() []packet.Packet {
 
 			Middleware: []packet.MiddlewareFunc{},
 		},
+		{
+			Name:       incoming.Register,
+			Handler:    InitializeRegisterHandler().Handle,
+			Middleware: []packet.MiddlewareFunc{},
+		},
 	}
 }
