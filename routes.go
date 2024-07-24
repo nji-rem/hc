@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/rs/zerolog/log"
 	"hc/api/connection"
 	"hc/api/connection/request"
 	"hc/api/packet"
@@ -11,6 +12,15 @@ import (
 
 func CollectRoutes() []packet.Packet {
 	return []packet.Packet{
+		{
+			Name: "@q",
+			Handler: func(request *request.Bag, response chan<- connection.Response) error {
+				log.Warn().Msg("@q not implemented yet")
+				return nil
+			},
+
+			Middleware: []packet.MiddlewareFunc{},
+		},
 		{
 			Name:    incoming.SecretKey,
 			Handler: secretkey.HandleSecretKey,
