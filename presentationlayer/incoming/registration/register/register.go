@@ -2,20 +2,17 @@ package register
 
 import (
 	"github.com/davecgh/go-spew/spew"
+	"github.com/rs/zerolog/log"
 	"hc/api/connection"
 	"hc/api/connection/request"
-	"hc/presentationlayer/parser/registration"
 )
 
 type Handler struct{}
 
 func (h Handler) Handle(sessionId string, request *request.Bag, response chan<- connection.Response) error {
-	registerForm, err := registration.ParseRegister(request.Body.Raw())
-	if err != nil {
-		return err
-	}
+	spew.Dump(request.Body.Body())
 
-	spew.Dump(registerForm)
+	log.Info().Msg("yay registration here")
 
 	return nil
 }

@@ -24,7 +24,7 @@ func (b *Body) Body() (any, bool) {
 	b.rw.RLock()
 	defer b.rw.RUnlock()
 
-	if b.parsedBody != nil {
+	if b.parsedBody == nil {
 		return nil, false
 	}
 

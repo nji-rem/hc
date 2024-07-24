@@ -23,6 +23,7 @@ import (
 	"hc/pkg/database"
 	"hc/presentationlayer/incoming/registration"
 	"hc/presentationlayer/incoming/registration/register"
+	"hc/presentationlayer/incoming/registration/register/middleware"
 	"strconv"
 	"sync"
 )
@@ -32,6 +33,15 @@ import (
 )
 
 // Injectors from wire.go:
+
+func InitializeValidateUsernameMiddleware() middleware.ValidateUsername {
+	viper := ProvideConfig()
+	db := ProvideDatabase(viper)
+	player := account.ProvidePlayerStore(db)
+	usernameAvailableFunc := account.ProvideCheckNameAvailabilityHandler(player)
+	validateUsername := ProvideValidateUsernameMiddleware(usernameAvailableFunc)
+	return validateUsername
+}
 
 func InitializeRegisterHandler() register.Handler {
 	handler := NewRegisterHandler()
@@ -174,4 +184,10 @@ func NewPasswordCheckHandler(validationFunc password.ValidationFunc) registratio
 
 func NewRegisterHandler() register.Handler {
 	return register.Handler{}
+}
+
+func ProvideValidateUsernameMiddleware(availableFunc availability.UsernameAvailableFunc) middleware.ValidateUsername {
+	return middleware.ValidateUsername{
+		AvailabilityChecker: availableFunc,
+	}
 }

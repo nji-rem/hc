@@ -7,6 +7,7 @@ import (
 	"hc/api/packet"
 	"hc/presentationlayer/incoming"
 	"hc/presentationlayer/incoming/handshake/secretkey"
+	"hc/presentationlayer/incoming/registration/register/middleware"
 	"hc/presentationlayer/outgoing/registration"
 )
 
@@ -54,9 +55,12 @@ func CollectRoutes() []packet.Packet {
 			Middleware: []packet.MiddlewareFunc{},
 		},
 		{
-			Name:       incoming.Register,
-			Handler:    InitializeRegisterHandler().Handle,
-			Middleware: []packet.MiddlewareFunc{},
+			Name:    incoming.Register,
+			Handler: InitializeRegisterHandler().Handle,
+			Middleware: []packet.MiddlewareFunc{
+				InitializeValidateUsernameMiddleware().Handle,
+				middleware.ParseRequestMiddleware,
+			},
 		},
 	}
 }

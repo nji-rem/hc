@@ -20,6 +20,7 @@ import (
 	"hc/pkg/database"
 	"hc/presentationlayer/incoming/registration"
 	"hc/presentationlayer/incoming/registration/register"
+	"hc/presentationlayer/incoming/registration/register/middleware"
 	"strconv"
 	"sync"
 )
@@ -133,6 +134,18 @@ func NewPasswordCheckHandler(validationFunc password.ValidationFunc) registratio
 
 func NewRegisterHandler() register.Handler {
 	return register.Handler{}
+}
+
+func ProvideValidateUsernameMiddleware(availableFunc availability.UsernameAvailableFunc) middleware.ValidateUsername {
+	return middleware.ValidateUsername{
+		AvailabilityChecker: availableFunc,
+	}
+}
+
+func InitializeValidateUsernameMiddleware() middleware.ValidateUsername {
+	wire.Build(ProvideValidateUsernameMiddleware, account.Set, ConfigSet, DatabaseSet)
+
+	return middleware.ValidateUsername{}
 }
 
 func InitializeRegisterHandler() register.Handler {
