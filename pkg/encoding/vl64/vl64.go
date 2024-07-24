@@ -2,6 +2,8 @@
 package vl64
 
 import (
+	"errors"
+	"fmt"
 	"math"
 )
 
@@ -49,20 +51,28 @@ func Length(firstChar byte) int {
 	return (int(firstChar) - int('@')) / 8
 }
 
-func Decode(s []byte) (int, int) {
-	len := Length(s[0])    // (firstChar - 64) / 8
+func Decode(s []byte) (int, int, error) {
+	if len(s) == 0 {
+		return 0, 0, errors.New("len(s) is 0")
+	}
+
+	vlen := Length(s[0])   // (firstChar - 64) / 8
 	total := int(s[0]) % 4 // Base4 value
 	inc := 0
 
-	for inc < len { // Increment all b64 symbols to the total
+	if vlen > len(s) {
+		return 0, 0, fmt.Errorf("len(buf) = %d smaller than vl64 length %d", len(s), vlen)
+	}
+
+	for inc < vlen { // Increment all b64 symbols to the total
 		total += (int(s[inc]) - int(byte('@'))) * int((math.Pow(float64(64), float64(inc)))/16)
 		inc++
 	}
 
 	positive := s[0]%8 < 4 // Base4 positive/negative
 	if positive {
-		return total, len
+		return total, vlen, nil
 	}
 
-	return -total, len
+	return -total, vlen, nil
 }

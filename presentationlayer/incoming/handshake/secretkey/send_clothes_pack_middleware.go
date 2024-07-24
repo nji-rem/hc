@@ -3,6 +3,7 @@ package secretkey
 import (
 	"github.com/rs/zerolog/log"
 	"hc/api/connection"
+	"hc/api/connection/request"
 	"hc/api/packet"
 	"hc/presentationlayer/outgoing/handshake"
 )
@@ -10,7 +11,7 @@ import (
 type SendClothesPackMiddleware struct{}
 
 func (s SendClothesPackMiddleware) Handle(next packet.HandlerFunc) packet.HandlerFunc {
-	return func(request *connection.Request, response chan<- connection.Response) error {
+	return func(request *request.Bag, response chan<- connection.Response) error {
 		err := next(request, response)
 		if err != nil {
 			return err

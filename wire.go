@@ -15,6 +15,7 @@ import (
 	"hc/internal/account"
 	"hc/internal/connection"
 	"hc/internal/packet"
+	"hc/internal/session"
 	"hc/pkg/config"
 	"hc/pkg/database"
 	"hc/presentationlayer/incoming/registration"
@@ -25,6 +26,7 @@ import (
 
 var AppSet = wire.NewSet(
 	connection.GameServerSet,
+	session.Set,
 	account.Set,
 	ConfigSet,
 	RouteSet,

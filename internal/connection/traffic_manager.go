@@ -1,19 +1,28 @@
 package connection
 
 import (
+	"errors"
 	"github.com/panjf2000/gnet/v2"
 	gameserverApi "hc/api/connection"
+	"hc/api/connection/request"
 )
 
 type TrafficManager struct {
 	TrafficRepository gameserverApi.Repository
 	TrafficParser     gameserverApi.TrafficParser
-	RequestPool       *gameserverApi.RequestPool
+	RequestPool       *request.Pool
 }
 
+var ErrContextNotFound = errors.New("connection context is undefined")
+
 func (t TrafficManager) OrchestrateTraffic(c gnet.Conn) error {
+	ctx, ok := c.Context().(gameserverApi.Context)
+	if !ok {
+		return ErrContextNotFound
+	}
+
 	// Acquire a new request object
-	request := t.RequestPool.Acquire()
+	request := t.RequestPool.Acquire(ctx.SessionID())
 
 	// Release the request object when we're done with it.
 	defer t.RequestPool.Release(request)

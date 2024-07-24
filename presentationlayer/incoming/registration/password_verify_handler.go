@@ -4,6 +4,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"hc/api/account/password"
 	"hc/api/connection"
+	"hc/api/connection/request"
 	"hc/pkg/packet"
 	"hc/presentationlayer/outgoing/registration"
 )
@@ -12,7 +13,7 @@ type PasswordVerifyHandler struct {
 	PasswordValidator password.ValidationFunc
 }
 
-func (p PasswordVerifyHandler) Handle(request *connection.Request, response chan<- connection.Response) error {
+func (p PasswordVerifyHandler) Handle(request *request.Bag, response chan<- connection.Response) error {
 	reader := packet.AcquireReader(request.Body)
 	defer packet.ReleaseReader(reader)
 

@@ -18,6 +18,7 @@ import (
 	"hc/internal/account"
 	"hc/internal/connection"
 	packet2 "hc/internal/packet"
+	"hc/internal/session"
 	config2 "hc/pkg/config"
 	"hc/pkg/database"
 	"hc/presentationlayer/incoming/registration"
@@ -56,7 +57,11 @@ func InitializeApp() *App {
 	resolver := ProvideRouteResolver()
 	wrapFunc := connection.ProvideMiddlewareWrapper()
 	frontController := connection.ProvideFrontController(resolver, wrapFunc)
-	repository := connection.ProvideSocketRepository(frontController)
+	store := session.ProvideSessionStore()
+	pool := session.ProvidePool()
+	createSessionOnNewConnection := connection.ProvideCreateSessionOnNewConnectionHandler(store, pool)
+	deleteSessionOnConnectionDestroyed := connection.ProvideDeleteSessionOnConnectionDestroyed(store, pool)
+	repository := connection.ProvideSocketRepository(frontController, createSessionOnNewConnection, deleteSessionOnConnectionDestroyed)
 	trafficParser := connection.ProvideTrafficParser()
 	requestPool := connection.ProvideRequestPool()
 	trafficManager := connection.ProvideTrafficManager(repository, trafficParser, requestPool)
@@ -69,7 +74,7 @@ func InitializeApp() *App {
 
 // wire.go:
 
-var AppSet = wire.NewSet(connection.GameServerSet, account.Set, ConfigSet,
+var AppSet = wire.NewSet(connection.GameServerSet, session.Set, account.Set, ConfigSet,
 	RouteSet,
 	DatabaseSet,
 )

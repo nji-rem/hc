@@ -7,6 +7,7 @@ import (
 type Repository struct {
 	connectionHandlers []apiSocket.ConnFunc
 	trafficHandlers    []apiSocket.TrafficHandlerFunc
+	shutdownHandlers   []apiSocket.ShutdownHandlerFunc
 }
 
 func (r *Repository) ConnectionHandlers() []apiSocket.ConnFunc {
@@ -17,9 +18,14 @@ func (r *Repository) TrafficHandlers() []apiSocket.TrafficHandlerFunc {
 	return r.trafficHandlers
 }
 
-func NewRepository(connectionHandlers []apiSocket.ConnFunc, trafficHandlers []apiSocket.TrafficHandlerFunc) *Repository {
+func (r *Repository) ShutdownHandlers() []apiSocket.ShutdownHandlerFunc {
+	return r.shutdownHandlers
+}
+
+func NewRepository(connectionHandlers []apiSocket.ConnFunc, trafficHandlers []apiSocket.TrafficHandlerFunc, shutdownHandlers []apiSocket.ShutdownHandlerFunc) *Repository {
 	return &Repository{
 		connectionHandlers: connectionHandlers,
 		trafficHandlers:    trafficHandlers,
+		shutdownHandlers:   shutdownHandlers,
 	}
 }

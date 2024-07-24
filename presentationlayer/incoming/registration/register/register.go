@@ -1,37 +1,21 @@
 package register
 
 import (
-	"github.com/rs/zerolog/log"
+	"github.com/davecgh/go-spew/spew"
 	"hc/api/connection"
-	"hc/pkg/packet"
+	"hc/api/connection/request"
+	"hc/presentationlayer/parser/registration"
 )
 
 type Handler struct{}
 
-func (h Handler) Handle(request *connection.Request, response chan<- connection.Response) error {
-	reader := packet.AcquireReader(request.Body)
-	defer packet.ReleaseReader(reader)
-
-	username, err := reader.String()
+func (h Handler) Handle(request *request.Bag, response chan<- connection.Response) error {
+	registerForm, err := registration.ParseRegister(request.Body)
 	if err != nil {
 		return err
 	}
 
-	log.Info().Msgf("Username: %s", username)
-
-	figure, err := reader.String()
-	if err != nil {
-		return err
-	}
-
-	log.Info().Msgf("Figure: %s", figure)
-
-	gender, err := reader.String()
-	if err != nil {
-		return err
-	}
-
-	log.Info().Msgf("Username: %s, figure: %s, gender: %s", username, figure, gender)
+	spew.Dump(registerForm)
 
 	return nil
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"hc/api/account/availability"
 	"hc/api/connection"
+	"hc/api/connection/request"
 	"hc/pkg/packet"
 	"hc/presentationlayer/outgoing/registration"
 )
@@ -12,7 +13,7 @@ type NameCheckHandler struct {
 	availabilityChecker availability.UsernameAvailableFunc
 }
 
-func (n NameCheckHandler) Handle(request *connection.Request, response chan<- connection.Response) error {
+func (n NameCheckHandler) Handle(request *request.Bag, response chan<- connection.Response) error {
 	reader := packet.AcquireReader(request.Body)
 	defer packet.ReleaseReader(reader)
 

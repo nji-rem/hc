@@ -29,6 +29,22 @@ func (g *GameSocket) OnOpen(c gnet.Conn) (out []byte, action gnet.Action) {
 	return
 }
 
+func (g *GameSocket) OnClose(conn gnet.Conn, err error) (action gnet.Action) {
+	if err != nil {
+		log.Error().Msgf("Connection %s closed due to an error: %s", conn.RemoteAddr().String(), err.Error())
+	}
+
+	log.Info().Msgf("Connection %s closed", conn.RemoteAddr().String())
+
+	for _, handler := range g.Repository.ShutdownHandlers() {
+		if err := handler(conn); err != nil {
+			log.Error().Msgf("an error occurred while running a shutdown handler: %s", err.Error())
+		}
+	}
+
+	return
+}
+
 func (g *GameSocket) OnTraffic(c gnet.Conn) gnet.Action {
 	if err := g.TrafficManager.OrchestrateTraffic(c); err != nil {
 		log.Error().Msgf("Unable to handle game server request: %s", err.Error())

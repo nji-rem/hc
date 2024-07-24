@@ -4,7 +4,9 @@ import (
 	"github.com/google/wire"
 	"github.com/panjf2000/gnet/v2"
 	apiSocket "hc/api/connection"
+	"hc/api/connection/request"
 	"hc/api/packet"
+	"hc/api/session"
 	"sync"
 )
 
@@ -13,7 +15,7 @@ var (
 	repository     *Repository
 	repositoryOnce sync.Once
 
-	requestPool     *apiSocket.RequestPool
+	requestPool     *request.Pool
 	requestPoolOnce sync.Once
 )
 
@@ -25,6 +27,8 @@ var GameServerSet = wire.NewSet(
 	ProvideRequestPool,
 	ProvideFrontController,
 	ProvideMiddlewareWrapper,
+	ProvideCreateSessionOnNewConnectionHandler,
+	ProvideDeleteSessionOnConnectionDestroyed,
 )
 
 func ProvideGameSocket(repository *Repository, manager TrafficManager) *GameSocket {
@@ -35,23 +39,28 @@ func ProvideGameSocket(repository *Repository, manager TrafficManager) *GameSock
 	}
 }
 
-func ProvideSocketRepository(controller FrontController) *Repository {
+func ProvideSocketRepository(controller FrontController, createSessionHandler CreateSessionOnNewConnection, deleteSessionHandler DeleteSessionOnConnectionDestroyed) *Repository {
 	repositoryOnce.Do(func() {
 		connectionHandlers := []apiSocket.ConnFunc{
 			SayHelloToClientHandler,
+			createSessionHandler.Handle,
 		}
 
 		trafficHandlers := []apiSocket.TrafficHandlerFunc{
 			controller.Handle,
 		}
 
-		repository = NewRepository(connectionHandlers, trafficHandlers)
+		shutdownHandlers := []apiSocket.ShutdownHandlerFunc{
+			deleteSessionHandler.Handle,
+		}
+
+		repository = NewRepository(connectionHandlers, trafficHandlers, shutdownHandlers)
 	})
 
 	return repository
 }
 
-func ProvideTrafficManager(trafficRepository *Repository, trafficParser *TrafficParser, pool *apiSocket.RequestPool) TrafficManager {
+func ProvideTrafficManager(trafficRepository *Repository, trafficParser *TrafficParser, pool *request.Pool) TrafficManager {
 	return TrafficManager{
 		TrafficRepository: trafficRepository,
 		TrafficParser:     trafficParser,
@@ -63,12 +72,26 @@ func ProvideTrafficParser() *TrafficParser {
 	return &TrafficParser{}
 }
 
-func ProvideRequestPool() *apiSocket.RequestPool {
+func ProvideRequestPool() *request.Pool {
 	requestPoolOnce.Do(func() {
-		requestPool = &apiSocket.RequestPool{}
+		requestPool = &request.Pool{}
 	})
 
 	return requestPool
+}
+
+func ProvideCreateSessionOnNewConnectionHandler(sessionStore session.Store, pool *session.Pool) CreateSessionOnNewConnection {
+	return CreateSessionOnNewConnection{
+		SessionStore: sessionStore,
+		Pool:         pool,
+	}
+}
+
+func ProvideDeleteSessionOnConnectionDestroyed(sessionStore session.Store, pool *session.Pool) DeleteSessionOnConnectionDestroyed {
+	return DeleteSessionOnConnectionDestroyed{
+		SessionStore: sessionStore,
+		Pool:         pool,
+	}
 }
 
 func ProvideFrontController(resolver packet.Resolver, middlewareWrapper packet.WrapFunc) FrontController {

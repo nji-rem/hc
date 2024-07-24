@@ -2,6 +2,7 @@ package main
 
 import (
 	"hc/api/connection"
+	"hc/api/connection/request"
 	"hc/api/packet"
 	"hc/presentationlayer/incoming"
 	"hc/presentationlayer/incoming/handshake/secretkey"
@@ -14,6 +15,7 @@ func CollectRoutes() []packet.Packet {
 			Name:    incoming.SecretKey,
 			Handler: secretkey.HandleSecretKey,
 
+			// tbh I have no idea, todo: check lingo code.
 			Middleware: []packet.MiddlewareFunc{
 				secretkey.SendClothesPackMiddleware{}.Handle,
 				secretkey.SessionDataMiddleware{}.Handle,
@@ -32,7 +34,7 @@ func CollectRoutes() []packet.Packet {
 		},
 		{
 			Name: incoming.MailCheck,
-			Handler: func(request *connection.Request, response chan<- connection.Response) error {
+			Handler: func(request *request.Bag, response chan<- connection.Response) error {
 				// We won't be implementing the e-mail check.
 				response <- registration.EmailApprovedResponse{}
 

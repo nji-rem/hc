@@ -3,14 +3,14 @@ package connection
 import (
 	"fmt"
 	"github.com/panjf2000/gnet/v2"
-	"hc/api/connection"
+	"hc/api/connection/request"
 	"io"
 	"reflect"
 )
 
 type TrafficParser struct{}
 
-func (t TrafficParser) Parse(reader io.Reader, request *connection.Request) error {
+func (t TrafficParser) Parse(reader io.Reader, request *request.Bag) error {
 	conn, ok := reader.(gnet.Conn)
 	if !ok {
 		// I don't expect this to happen, so this reflection shouldn't happen in real life.
