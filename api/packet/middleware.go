@@ -10,7 +10,7 @@ type (
 	//
 	// Argument request contains a reference to the current request. It contains data such as the packet header, the
 	// packet body, and some other information.
-	HandlerFunc func(request *request.Bag, response chan<- connection.Response) error
+	HandlerFunc func(sessionId string, request *request.Bag, response chan<- connection.Response) error
 
 	// MiddlewareFunc contains the function signature that is required for middleware. Each middleware is wrapped around
 	// a packet handler, HandlerFunc.

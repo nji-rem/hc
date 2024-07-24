@@ -13,8 +13,8 @@ type PasswordVerifyHandler struct {
 	PasswordValidator password.ValidationFunc
 }
 
-func (p PasswordVerifyHandler) Handle(request *request.Bag, response chan<- connection.Response) error {
-	reader := packet.AcquireReader(request.Body)
+func (p PasswordVerifyHandler) Handle(sessionId string, request *request.Bag, response chan<- connection.Response) error {
+	reader := packet.AcquireReader(request.Body.Raw())
 	defer packet.ReleaseReader(reader)
 
 	username, err := reader.String()

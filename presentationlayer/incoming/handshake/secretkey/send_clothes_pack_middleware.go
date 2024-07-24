@@ -11,8 +11,8 @@ import (
 type SendClothesPackMiddleware struct{}
 
 func (s SendClothesPackMiddleware) Handle(next packet.HandlerFunc) packet.HandlerFunc {
-	return func(request *request.Bag, response chan<- connection.Response) error {
-		err := next(request, response)
+	return func(sessionId string, request *request.Bag, response chan<- connection.Response) error {
+		err := next(sessionId, request, response)
 		if err != nil {
 			return err
 		}

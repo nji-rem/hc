@@ -14,7 +14,7 @@ func CollectRoutes() []packet.Packet {
 	return []packet.Packet{
 		{
 			Name: "@q",
-			Handler: func(request *request.Bag, response chan<- connection.Response) error {
+			Handler: func(sessionId string, request *request.Bag, response chan<- connection.Response) error {
 				log.Warn().Msg("@q not implemented yet")
 				return nil
 			},
@@ -44,7 +44,7 @@ func CollectRoutes() []packet.Packet {
 		},
 		{
 			Name: incoming.MailCheck,
-			Handler: func(request *request.Bag, response chan<- connection.Response) error {
+			Handler: func(sessionId string, request *request.Bag, response chan<- connection.Response) error {
 				// We won't be implementing the e-mail check.
 				response <- registration.EmailApprovedResponse{}
 

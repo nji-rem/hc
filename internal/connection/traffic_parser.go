@@ -28,7 +28,7 @@ func (t TrafficParser) Parse(reader io.Reader, request *request.Bag) error {
 	}
 
 	request.Header = string(buffer[3:5])
-	request.Body = buffer[5:]
+	request.Body.SetRaw(buffer[5:])
 
 	return nil
 }

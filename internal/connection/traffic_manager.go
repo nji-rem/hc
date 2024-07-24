@@ -22,7 +22,7 @@ func (t TrafficManager) OrchestrateTraffic(c gnet.Conn) error {
 	}
 
 	// Acquire a new request object
-	request := t.RequestPool.Acquire(ctx.SessionID())
+	request := t.RequestPool.Acquire()
 
 	// Release the request object when we're done with it.
 	defer t.RequestPool.Release(request)
@@ -35,7 +35,7 @@ func (t TrafficManager) OrchestrateTraffic(c gnet.Conn) error {
 	// Get all traffic handlers and execute each one of them.
 	trafficHandlers := t.TrafficRepository.TrafficHandlers()
 	for i := 0; i < len(trafficHandlers); i++ {
-		if err := trafficHandlers[i](request, c); err != nil {
+		if err := trafficHandlers[i](ctx.SessionID(), request, c); err != nil {
 			return err
 		}
 	}

@@ -8,7 +8,7 @@ import (
 type (
 	ConnFunc            func(writer io.Writer) error
 	ShutdownHandlerFunc func(writer io.Writer) error
-	TrafficHandlerFunc  func(request *request.Bag, writer io.Writer) error
+	TrafficHandlerFunc  func(sessionId string, request *request.Bag, writer io.Writer) error
 
 	ConfigFunc func(connectionHandlers *[]ConnFunc, trafficHandlers *[]TrafficHandlerFunc)
 )

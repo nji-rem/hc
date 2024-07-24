@@ -13,7 +13,7 @@ type FrontController struct {
 	WrapMiddleware packet.WrapFunc
 }
 
-func (f FrontController) Handle(request *request.Bag, writer io.Writer) error {
+func (f FrontController) Handle(sessionId string, request *request.Bag, writer io.Writer) error {
 	// Resolve route
 	route, err := f.Resolver.Get(request.Header)
 	if err != nil {
@@ -48,5 +48,5 @@ func (f FrontController) Handle(request *request.Bag, writer io.Writer) error {
 	}(writer)
 
 	// Execute the handler
-	return handler(request, ch)
+	return handler(sessionId, request, ch)
 }

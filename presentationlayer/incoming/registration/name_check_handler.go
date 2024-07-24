@@ -13,8 +13,8 @@ type NameCheckHandler struct {
 	availabilityChecker availability.UsernameAvailableFunc
 }
 
-func (n NameCheckHandler) Handle(request *request.Bag, response chan<- connection.Response) error {
-	reader := packet.AcquireReader(request.Body)
+func (n NameCheckHandler) Handle(sessionId string, request *request.Bag, response chan<- connection.Response) error {
+	reader := packet.AcquireReader(request.Body.Raw())
 	defer packet.ReleaseReader(reader)
 
 	username, err := reader.String()
