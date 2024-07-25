@@ -11,6 +11,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
+	account2 "hc/api/account"
 	"hc/api/account/availability"
 	"hc/api/account/password"
 	"hc/api/config"
@@ -44,7 +45,12 @@ func InitializeValidateUsernameMiddleware() middleware.ValidateUsername {
 }
 
 func InitializeRegisterHandler() register.Handler {
-	handler := NewRegisterHandler()
+	viper := ProvideConfig()
+	db := ProvideDatabase(viper)
+	player := account.ProvidePlayerStore(db)
+	hashService := account.ProvidePasswordHasher()
+	createAccount := account.ProvideCreateAccountHandler(player, hashService)
+	handler := NewRegisterHandler(createAccount)
 	return handler
 }
 
@@ -182,8 +188,10 @@ func NewPasswordCheckHandler(validationFunc password.ValidationFunc) registratio
 	return registration.PasswordVerifyHandler{PasswordValidator: validationFunc}
 }
 
-func NewRegisterHandler() register.Handler {
-	return register.Handler{}
+func NewRegisterHandler(accountCreator account2.CreateAccount) register.Handler {
+	return register.Handler{
+		AccountCreator: accountCreator,
+	}
 }
 
 func ProvideValidateUsernameMiddleware(availableFunc availability.UsernameAvailableFunc) middleware.ValidateUsername {

@@ -8,6 +8,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
+	apiAccount "hc/api/account"
 	"hc/api/account/availability"
 	"hc/api/account/password"
 	apiConfig "hc/api/config"
@@ -132,8 +133,10 @@ func NewPasswordCheckHandler(validationFunc password.ValidationFunc) registratio
 	return registration.PasswordVerifyHandler{PasswordValidator: validationFunc}
 }
 
-func NewRegisterHandler() register.Handler {
-	return register.Handler{}
+func NewRegisterHandler(accountCreator apiAccount.CreateAccount) register.Handler {
+	return register.Handler{
+		AccountCreator: accountCreator,
+	}
 }
 
 func ProvideValidateUsernameMiddleware(availableFunc availability.UsernameAvailableFunc) middleware.ValidateUsername {
@@ -149,7 +152,7 @@ func InitializeValidateUsernameMiddleware() middleware.ValidateUsername {
 }
 
 func InitializeRegisterHandler() register.Handler {
-	wire.Build(NewRegisterHandler)
+	wire.Build(NewRegisterHandler, account.Set, ConfigSet, DatabaseSet)
 
 	return register.Handler{}
 }

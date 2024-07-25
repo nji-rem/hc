@@ -1,18 +1,34 @@
 package register
 
 import (
-	"github.com/davecgh/go-spew/spew"
-	"github.com/rs/zerolog/log"
+	"errors"
+	"hc/api/account"
 	"hc/api/connection"
 	"hc/api/connection/request"
+	"hc/presentationlayer/parser/registration"
 )
 
-type Handler struct{}
+var ErrBodyNotFound = errors.New("body not found")
+
+type Handler struct {
+	AccountCreator account.CreateAccount
+}
 
 func (h Handler) Handle(sessionId string, request *request.Bag, response chan<- connection.Response) error {
-	spew.Dump(request.Body.Body())
+	body, ok := request.Body.Body()
+	if !ok {
+		return ErrBodyNotFound
+	}
 
-	log.Info().Msg("yay registration here")
+	registerBody, ok := body.(registration.Register)
+	if !ok {
+		return ErrBodyNotFound
+	}
+
+	_, err := h.AccountCreator.Create(registerBody.Username, registerBody.Password, registerBody.Figure, registerBody.Sex)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

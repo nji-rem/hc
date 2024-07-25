@@ -5,6 +5,7 @@ CREATE TABLE accounts(
     username varchar(255) not null,
     password varchar(255) not null,
     look varchar(255) not null,
+    gender enum('m', 'f') not null,
     motto varchar(255),
     created_at TIMESTAMP,
     updated_at TIMESTAMP,

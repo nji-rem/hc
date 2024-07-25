@@ -1,4 +1,4 @@
-package validator
+package password
 
 import "errors"
 
@@ -12,7 +12,7 @@ const (
 	MaxPasswordSize = 15
 )
 
-func ValidatePassword(password string) error {
+func Validate(password string) error {
 	if len(password) < MinPasswordSize {
 		return ErrPasswordTooShort
 	}
