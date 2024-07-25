@@ -1,6 +1,9 @@
 package password
 
-import "golang.org/x/crypto/bcrypt"
+import (
+	"errors"
+	"golang.org/x/crypto/bcrypt"
+)
 
 type HashService struct{}
 
@@ -15,4 +18,16 @@ func (h HashService) Hash(plaintext string) (string, error) {
 	}
 
 	return string(hashedPassword), nil
+}
+
+func (h HashService) Verify(plaintext, ciphertext []byte) (bool, error) {
+	if err := bcrypt.CompareHashAndPassword(ciphertext, plaintext); err != nil {
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			return false, nil
+		}
+
+		return false, err
+	}
+
+	return true, nil
 }

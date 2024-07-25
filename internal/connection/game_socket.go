@@ -31,14 +31,14 @@ func (g *GameSocket) OnOpen(c gnet.Conn) (out []byte, action gnet.Action) {
 
 func (g *GameSocket) OnClose(conn gnet.Conn, err error) (action gnet.Action) {
 	if err != nil {
-		log.Error().Msgf("Connection %s closed due to an error: %s", conn.RemoteAddr().String(), err.Error())
+		log.Error().Msgf("Connection %s closed due to an message: %s", conn.RemoteAddr().String(), err.Error())
 	}
 
 	log.Info().Msgf("Connection %s closed", conn.RemoteAddr().String())
 
 	for _, handler := range g.Repository.ShutdownHandlers() {
 		if err := handler(conn); err != nil {
-			log.Error().Msgf("an error occurred while running a shutdown handler: %s", err.Error())
+			log.Error().Msgf("an message occurred while running a shutdown handler: %s", err.Error())
 		}
 	}
 

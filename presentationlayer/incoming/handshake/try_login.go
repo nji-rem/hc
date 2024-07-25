@@ -2,13 +2,17 @@ package handshake
 
 import (
 	"fmt"
+	"hc/api/account"
 	"hc/api/connection"
 	"hc/api/connection/request"
+	"hc/presentationlayer/outgoing/message"
 	"hc/presentationlayer/parser/handshake"
 	"reflect"
 )
 
-type TryLoginHandler struct{}
+type TryLoginHandler struct {
+	CredentialsVerifier account.VerifyCredentials
+}
 
 func (t TryLoginHandler) Handle(sessionId string, request *request.Bag, response chan<- connection.Response) error {
 	model, ok := request.Body.Parsed().(handshake.TryLogin)
@@ -16,8 +20,16 @@ func (t TryLoginHandler) Handle(sessionId string, request *request.Bag, response
 		return fmt.Errorf("expected type handshake.TryLogin, got %s", reflect.TypeOf(model))
 	}
 
-	fmt.Println(model.Username)
-	fmt.Println(model.Password)
+	validCredentials, err := t.CredentialsVerifier.Verify(model.Username, model.Password)
+	if err != nil {
+		return err
+	}
+
+	if validCredentials {
+
+	} else {
+		response <- message.ErrorResponse{Msg: "login incorrect"}
+	}
 
 	return nil
 }

@@ -23,9 +23,9 @@ func (c CheckNameAvailabilityHandler) Handle(name string) (availability.Status, 
 		case errors.Is(err, accountaggregate.ErrInvalidCharacters):
 			return availability.UsernameContainsIllegalCharacters, nil
 		default:
-			// There's no default availability type for an actual error, so we'll just tell the client that the username
-			// is currently taken. The caller can also decide to e.g. disconnect the user due to the error.
-			return availability.UsernameTaken, fmt.Errorf("an unknown error occurred while checking username availability: %s", err.Error())
+			// There's no default availability type for an actual message, so we'll just tell the client that the username
+			// is currently taken. The caller can also decide to e.g. disconnect the user due to the message.
+			return availability.UsernameTaken, fmt.Errorf("an unknown message occurred while checking username availability: %s", err.Error())
 		}
 	}
 

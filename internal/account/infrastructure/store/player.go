@@ -1,6 +1,8 @@
 package store
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/jmoiron/sqlx"
 	"hc/internal/account/domain/accountaggregate"
@@ -18,6 +20,21 @@ func (p *Player) NameTaken(username accountaggregate.Username) (bool, error) {
 
 	return count > 0, nil
 }
+
+func (p *Player) FindByUsername(username string) (bool, accountaggregate.Entity, error) {
+	var entity accountaggregate.Entity
+	err := p.DB.Get(&entity, "SELECT * FROM accounts WHERE username = ?", username)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, accountaggregate.Entity{}, nil
+		}
+
+		return false, accountaggregate.Entity{}, err
+	}
+
+	return true, entity, nil
+}
+
 func (p *Player) Add(entity accountaggregate.Entity) error {
 	query := "INSERT INTO accounts (username, password, look, gender, motto) VALUES (:username, :password, :look, :gender, :motto)"
 	result, err := p.DB.NamedExec(query, entity)

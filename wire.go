@@ -146,8 +146,10 @@ func ProvideValidateUsernameMiddleware(availableFunc availability.UsernameAvaila
 	}
 }
 
-func ProvideTryLoginHandler() handshake.TryLoginHandler {
-	return handshake.TryLoginHandler{}
+func ProvideTryLoginHandler(credentialsVerifier apiAccount.VerifyCredentials) handshake.TryLoginHandler {
+	return handshake.TryLoginHandler{
+		CredentialsVerifier: credentialsVerifier,
+	}
 }
 
 func InitializeValidateUsernameMiddleware() middleware.ValidateUsername {
@@ -175,7 +177,7 @@ func InitializePasswordVerifyHandler() registration.PasswordVerifyHandler {
 }
 
 func InitializeTryLoginHandler() handshake.TryLoginHandler {
-	wire.Build(ProvideTryLoginHandler)
+	wire.Build(ProvideTryLoginHandler, account.Set, ConfigSet, DatabaseSet)
 
 	return handshake.TryLoginHandler{}
 }

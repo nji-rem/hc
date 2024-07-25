@@ -24,6 +24,8 @@ var Set = wire.NewSet(
 	wire.Bind(new(passwordDomain.Hasher), new(*passwordInfra.HashService)),
 	ProvideCreateAccountHandler,
 	wire.Bind(new(apiAccount.CreateAccount), new(*application.CreateAccount)),
+	ProvideVerifyCredentialsHandler,
+	wire.Bind(new(apiAccount.VerifyCredentials), new(*application.VerifyCredentials)),
 )
 
 // playerStore can be a singleton; *sqlx.DB is thread-safe and is intended to be used in concurrent environments.
@@ -65,5 +67,12 @@ func ProvideCreateAccountHandler(store *store.Player, hasher passwordDomain.Hash
 	return &application.CreateAccount{
 		Store:  store,
 		Hasher: hasher,
+	}
+}
+
+func ProvideVerifyCredentialsHandler(store *store.Player, hasher *passwordInfra.HashService) *application.VerifyCredentials {
+	return &application.VerifyCredentials{
+		Store:            store,
+		PasswordVerifier: hasher,
 	}
 }

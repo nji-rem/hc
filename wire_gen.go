@@ -71,7 +71,12 @@ func InitializePasswordVerifyHandler() registration.PasswordVerifyHandler {
 }
 
 func InitializeTryLoginHandler() handshake.TryLoginHandler {
-	tryLoginHandler := ProvideTryLoginHandler()
+	viper := ProvideConfig()
+	db := ProvideDatabase(viper)
+	player := account.ProvidePlayerStore(db)
+	hashService := account.ProvidePasswordHasher()
+	verifyCredentials := account.ProvideVerifyCredentialsHandler(player, hashService)
+	tryLoginHandler := ProvideTryLoginHandler(verifyCredentials)
 	return tryLoginHandler
 }
 
@@ -206,6 +211,8 @@ func ProvideValidateUsernameMiddleware(availableFunc availability.UsernameAvaila
 	}
 }
 
-func ProvideTryLoginHandler() handshake.TryLoginHandler {
-	return handshake.TryLoginHandler{}
+func ProvideTryLoginHandler(credentialsVerifier account2.VerifyCredentials) handshake.TryLoginHandler {
+	return handshake.TryLoginHandler{
+		CredentialsVerifier: credentialsVerifier,
+	}
 }
