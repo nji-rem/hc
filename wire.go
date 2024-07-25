@@ -19,7 +19,7 @@ import (
 	"hc/internal/session"
 	"hc/pkg/config"
 	"hc/pkg/database"
-	"hc/presentationlayer/incoming/handshake"
+	"hc/presentationlayer/incoming/login"
 	"hc/presentationlayer/incoming/registration"
 	"hc/presentationlayer/incoming/registration/register"
 	"hc/presentationlayer/incoming/registration/register/middleware"
@@ -146,8 +146,8 @@ func ProvideValidateUsernameMiddleware(availableFunc availability.UsernameAvaila
 	}
 }
 
-func ProvideTryLoginHandler(credentialsVerifier apiAccount.VerifyCredentials) handshake.TryLoginHandler {
-	return handshake.TryLoginHandler{
+func ProvideTryLoginHandler(credentialsVerifier apiAccount.VerifyCredentials) login.TryLoginHandler {
+	return login.TryLoginHandler{
 		CredentialsVerifier: credentialsVerifier,
 	}
 }
@@ -176,10 +176,10 @@ func InitializePasswordVerifyHandler() registration.PasswordVerifyHandler {
 	return registration.PasswordVerifyHandler{}
 }
 
-func InitializeTryLoginHandler() handshake.TryLoginHandler {
+func InitializeTryLoginHandler() login.TryLoginHandler {
 	wire.Build(ProvideTryLoginHandler, account.Set, ConfigSet, DatabaseSet)
 
-	return handshake.TryLoginHandler{}
+	return login.TryLoginHandler{}
 }
 
 func InitializeApp() *App {

@@ -17,13 +17,20 @@ func (r *Pool) Acquire() *Bag {
 		bag = new(Bag)
 	}
 
+	r.clean(bag)
 	bag.ID = uuid.NewString()
 
 	return bag
 }
 
+func (r *Pool) clean(bag *Bag) {
+	bag.ID = ""
+	bag.Authenticated.Store(false)
+	bag.Clear()
+}
+
 func (r *Pool) Release(request *Bag) {
-	request.ID = ""
+	r.clean(request)
 
 	pool.Put(request)
 }

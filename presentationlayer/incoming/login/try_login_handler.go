@@ -1,10 +1,11 @@
-package handshake
+package login
 
 import (
 	"fmt"
 	"hc/api/account"
 	"hc/api/connection"
 	"hc/api/connection/request"
+	"hc/presentationlayer/outgoing/login"
 	"hc/presentationlayer/outgoing/message"
 	"hc/presentationlayer/parser/handshake"
 	"reflect"
@@ -26,7 +27,7 @@ func (t TryLoginHandler) Handle(sessionId string, request *request.Bag, response
 	}
 
 	if validCredentials {
-
+		response <- login.OKResponse{}
 	} else {
 		response <- message.ErrorResponse{Msg: "login incorrect"}
 	}

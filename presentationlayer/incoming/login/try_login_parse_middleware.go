@@ -1,4 +1,4 @@
-package handshake
+package login
 
 import (
 	"github.com/rs/zerolog/log"

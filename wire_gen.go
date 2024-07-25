@@ -22,7 +22,7 @@ import (
 	"hc/internal/session"
 	config2 "hc/pkg/config"
 	"hc/pkg/database"
-	"hc/presentationlayer/incoming/handshake"
+	"hc/presentationlayer/incoming/login"
 	"hc/presentationlayer/incoming/registration"
 	"hc/presentationlayer/incoming/registration/register"
 	"hc/presentationlayer/incoming/registration/register/middleware"
@@ -70,7 +70,7 @@ func InitializePasswordVerifyHandler() registration.PasswordVerifyHandler {
 	return passwordVerifyHandler
 }
 
-func InitializeTryLoginHandler() handshake.TryLoginHandler {
+func InitializeTryLoginHandler() login.TryLoginHandler {
 	viper := ProvideConfig()
 	db := ProvideDatabase(viper)
 	player := account.ProvidePlayerStore(db)
@@ -211,8 +211,8 @@ func ProvideValidateUsernameMiddleware(availableFunc availability.UsernameAvaila
 	}
 }
 
-func ProvideTryLoginHandler(credentialsVerifier account2.VerifyCredentials) handshake.TryLoginHandler {
-	return handshake.TryLoginHandler{
+func ProvideTryLoginHandler(credentialsVerifier account2.VerifyCredentials) login.TryLoginHandler {
+	return login.TryLoginHandler{
 		CredentialsVerifier: credentialsVerifier,
 	}
 }
