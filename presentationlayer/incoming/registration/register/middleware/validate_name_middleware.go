@@ -23,14 +23,9 @@ type ValidateUsername struct {
 
 func (v ValidateUsername) Handle(next packet.HandlerFunc) packet.HandlerFunc {
 	return func(sessionId string, request *request.Bag, response chan<- connection.Response) error {
-		body, ok := request.Body.Body()
+		parsedBody, ok := request.Body.Parsed().(registration.Register)
 		if !ok {
-			return ErrNoBodyFound
-		}
-
-		parsedBody, ok := body.(registration.Register)
-		if !ok {
-			return fmt.Errorf("expected type registration.Register, got %s instead", reflect.TypeOf(body))
+			return fmt.Errorf("expected type registration.Register, got %s instead", reflect.TypeOf(parsedBody))
 		}
 
 		availabilityStatus, err := v.AvailabilityChecker(parsedBody.Username)

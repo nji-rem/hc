@@ -22,6 +22,7 @@ import (
 	"hc/internal/session"
 	config2 "hc/pkg/config"
 	"hc/pkg/database"
+	"hc/presentationlayer/incoming/handshake"
 	"hc/presentationlayer/incoming/registration"
 	"hc/presentationlayer/incoming/registration/register"
 	"hc/presentationlayer/incoming/registration/register/middleware"
@@ -67,6 +68,11 @@ func InitializePasswordVerifyHandler() registration.PasswordVerifyHandler {
 	validationFunc := account.ProvidePasswordValidator()
 	passwordVerifyHandler := NewPasswordCheckHandler(validationFunc)
 	return passwordVerifyHandler
+}
+
+func InitializeTryLoginHandler() handshake.TryLoginHandler {
+	tryLoginHandler := ProvideTryLoginHandler()
+	return tryLoginHandler
 }
 
 func InitializeApp() *App {
@@ -198,4 +204,8 @@ func ProvideValidateUsernameMiddleware(availableFunc availability.UsernameAvaila
 	return middleware.ValidateUsername{
 		AvailabilityChecker: availableFunc,
 	}
+}
+
+func ProvideTryLoginHandler() handshake.TryLoginHandler {
+	return handshake.TryLoginHandler{}
 }

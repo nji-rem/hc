@@ -15,12 +15,7 @@ type Handler struct {
 }
 
 func (h Handler) Handle(sessionId string, request *request.Bag, response chan<- connection.Response) error {
-	body, ok := request.Body.Body()
-	if !ok {
-		return ErrBodyNotFound
-	}
-
-	registerBody, ok := body.(registration.Register)
+	registerBody, ok := request.Body.Parsed().(registration.Register)
 	if !ok {
 		return ErrBodyNotFound
 	}

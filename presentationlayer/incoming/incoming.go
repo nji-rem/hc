@@ -6,4 +6,5 @@ const (
 	PasswordCheck = "CK"
 	MailCheck     = "CE"
 	Register      = "@k"
+	TryLogin      = "@D"
 )

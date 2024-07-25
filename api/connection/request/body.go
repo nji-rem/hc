@@ -20,15 +20,15 @@ func (b *Body) SetRaw(raw []byte) {
 	b.rw.Unlock()
 }
 
-func (b *Body) Body() (any, bool) {
+func (b *Body) Parsed() any {
 	b.rw.RLock()
 	defer b.rw.RUnlock()
 
 	if b.parsedBody == nil {
-		return nil, false
+		return nil
 	}
 
-	return b.parsedBody, true
+	return b.parsedBody
 }
 
 func (b *Body) SetParsedBody(item any) {

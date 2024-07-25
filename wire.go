@@ -19,6 +19,7 @@ import (
 	"hc/internal/session"
 	"hc/pkg/config"
 	"hc/pkg/database"
+	"hc/presentationlayer/incoming/handshake"
 	"hc/presentationlayer/incoming/registration"
 	"hc/presentationlayer/incoming/registration/register"
 	"hc/presentationlayer/incoming/registration/register/middleware"
@@ -145,6 +146,10 @@ func ProvideValidateUsernameMiddleware(availableFunc availability.UsernameAvaila
 	}
 }
 
+func ProvideTryLoginHandler() handshake.TryLoginHandler {
+	return handshake.TryLoginHandler{}
+}
+
 func InitializeValidateUsernameMiddleware() middleware.ValidateUsername {
 	wire.Build(ProvideValidateUsernameMiddleware, account.Set, ConfigSet, DatabaseSet)
 
@@ -167,6 +172,12 @@ func InitializePasswordVerifyHandler() registration.PasswordVerifyHandler {
 	wire.Build(NewPasswordCheckHandler, account.Set)
 
 	return registration.PasswordVerifyHandler{}
+}
+
+func InitializeTryLoginHandler() handshake.TryLoginHandler {
+	wire.Build(ProvideTryLoginHandler)
+
+	return handshake.TryLoginHandler{}
 }
 
 func InitializeApp() *App {
