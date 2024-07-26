@@ -60,6 +60,7 @@ func CollectRoutes() []packet.Packet {
 			Name:    incoming.Register,
 			Handler: InitializeRegisterHandler().Handle,
 			Middleware: []packet.MiddlewareFunc{
+				InitializeLoginAfterRegistrationMiddleware().Handle,
 				InitializeValidateUsernameMiddleware().Handle,
 				middleware.ParseRequestMiddleware,
 			},

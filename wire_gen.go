@@ -78,6 +78,18 @@ func InitializePasswordVerifyHandler() registration.PasswordVerifyHandler {
 	return passwordVerifyHandler
 }
 
+func InitializeLoginAfterRegistrationMiddleware() middleware.LoginAfterRegistration {
+	viper := ProvideConfig()
+	db := ProvideDatabase(viper)
+	player := account.ProvidePlayerStore(db)
+	hashService := account.ProvidePasswordHasher()
+	verifyCredentials := account.ProvideVerifyCredentialsHandler(player, hashService)
+	store := session.ProvideSessionStore()
+	loginService := ProvideLoginService(verifyCredentials, store)
+	loginAfterRegistration := ProvideLoginAfterRegistrationMiddleware(loginService)
+	return loginAfterRegistration
+}
+
 func InitializeTryLoginHandler() login.TryLoginHandler {
 	viper := ProvideConfig()
 	db := ProvideDatabase(viper)
@@ -257,5 +269,11 @@ func ProvideUserInfoHandler(store *session.Store, retriever profile2.InfoRetriev
 	return user.InfoHandler{
 		SessionStore:  store,
 		InfoRetriever: retriever,
+	}
+}
+
+func ProvideLoginAfterRegistrationMiddleware(service saga.LoginService) middleware.LoginAfterRegistration {
+	return middleware.LoginAfterRegistration{
+		LoginService: service,
 	}
 }

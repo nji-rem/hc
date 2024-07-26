@@ -208,6 +208,18 @@ func InitializePasswordVerifyHandler() registration2.PasswordVerifyHandler {
 	return registration2.PasswordVerifyHandler{}
 }
 
+func ProvideLoginAfterRegistrationMiddleware(service saga.LoginService) middleware.LoginAfterRegistration {
+	return middleware.LoginAfterRegistration{
+		LoginService: service,
+	}
+}
+
+func InitializeLoginAfterRegistrationMiddleware() middleware.LoginAfterRegistration {
+	wire.Build(ProvideLoginAfterRegistrationMiddleware, ProvideLoginService, session.Set, account.Set, ConfigSet, DatabaseSet)
+
+	return middleware.LoginAfterRegistration{}
+}
+
 func InitializeTryLoginHandler() login.TryLoginHandler {
 	wire.Build(ProvideTryLoginHandler, ProvideLoginService, session.Set, account.Set, ConfigSet, DatabaseSet)
 
