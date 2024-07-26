@@ -1,5 +1,5 @@
 package account
 
 type VerifyCredentials interface {
-	Verify(username, password string) (bool, error)
+	Verify(username, password string) (bool, int, error)
 }

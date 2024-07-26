@@ -5,7 +5,7 @@ import (
 	"hc/api/connection"
 	"hc/api/connection/request"
 	"hc/api/packet"
-	"hc/presentationlayer/parser/handshake"
+	"hc/presentationlayer/event/parser/handshake"
 )
 
 func ParseTryLoginMiddleware(next packet.HandlerFunc) packet.HandlerFunc {

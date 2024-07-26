@@ -8,7 +8,7 @@ import (
 	"sync"
 )
 
-var Set = wire.NewSet(ProvideProfileStore, ProvideCreateProfile)
+var Set = wire.NewSet(ProvideProfileStore, ProvideCreateProfile, ProvideRetrieveProfile)
 
 var (
 	profileStoreOnce sync.Once
@@ -16,6 +16,9 @@ var (
 
 	createProfileOnce sync.Once
 	createProfile     *application.CreateProfile
+
+	retrieveProfileOnce sync.Once
+	retrieveProfile     *application.InfoRetriever
 )
 
 func ProvideProfileStore(db *sqlx.DB) *store.Profile {
@@ -32,4 +35,12 @@ func ProvideCreateProfile(profileStore *store.Profile) *application.CreateProfil
 	})
 
 	return createProfile
+}
+
+func ProvideRetrieveProfile(profileStore *store.Profile) *application.InfoRetriever {
+	retrieveProfileOnce.Do(func() {
+		retrieveProfile = &application.InfoRetriever{ProfileStore: profileStore}
+	})
+
+	return retrieveProfile
 }

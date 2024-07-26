@@ -3,7 +3,7 @@ package saga
 import (
 	"hc/api/account"
 	"hc/api/profile"
-	"hc/presentationlayer/parser/registration"
+	"hc/presentationlayer/event/parser/registration"
 )
 
 type RegistrationService struct {

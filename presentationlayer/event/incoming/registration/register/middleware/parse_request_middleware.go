@@ -5,7 +5,7 @@ import (
 	"hc/api/connection"
 	"hc/api/connection/request"
 	"hc/api/packet"
-	"hc/presentationlayer/parser/registration"
+	"hc/presentationlayer/event/parser/registration"
 )
 
 func ParseRequestMiddleware(next packet.HandlerFunc) packet.HandlerFunc {

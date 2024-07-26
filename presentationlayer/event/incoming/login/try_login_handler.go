@@ -2,17 +2,17 @@ package login
 
 import (
 	"fmt"
-	"hc/api/account"
 	"hc/api/connection"
 	"hc/api/connection/request"
+	"hc/presentationlayer/event/parser/handshake"
 	"hc/presentationlayer/outgoing/login"
 	"hc/presentationlayer/outgoing/message"
-	"hc/presentationlayer/parser/handshake"
+	"hc/presentationlayer/saga"
 	"reflect"
 )
 
 type TryLoginHandler struct {
-	CredentialsVerifier account.VerifyCredentials
+	LoginService saga.LoginService
 }
 
 func (t TryLoginHandler) Handle(sessionId string, request *request.Bag, response chan<- connection.Response) error {
@@ -21,16 +21,17 @@ func (t TryLoginHandler) Handle(sessionId string, request *request.Bag, response
 		return fmt.Errorf("expected type handshake.TryLogin, got %s", reflect.TypeOf(model))
 	}
 
-	validCredentials, err := t.CredentialsVerifier.Verify(model.Username, model.Password)
+	loginSuccess, err := t.LoginService.Login(sessionId, model.Username, model.Password)
 	if err != nil {
 		return err
 	}
 
-	if validCredentials {
-		response <- login.OKResponse{}
-	} else {
+	if !loginSuccess {
 		response <- message.ErrorResponse{Msg: "login incorrect"}
+		return nil
 	}
+
+	response <- login.OKResponse{}
 
 	return nil
 }

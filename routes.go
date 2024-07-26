@@ -1,15 +1,14 @@
 package main
 
 import (
-	"fmt"
 	"github.com/rs/zerolog/log"
 	"hc/api/connection"
 	"hc/api/connection/request"
 	"hc/api/packet"
-	"hc/presentationlayer/incoming"
-	"hc/presentationlayer/incoming/handshake/secretkey"
-	"hc/presentationlayer/incoming/login"
-	"hc/presentationlayer/incoming/registration/register/middleware"
+	"hc/presentationlayer/event/incoming"
+	secretkey2 "hc/presentationlayer/event/incoming/handshake/secretkey"
+	"hc/presentationlayer/event/incoming/login"
+	"hc/presentationlayer/event/incoming/registration/register/middleware"
 	"hc/presentationlayer/outgoing/registration"
 	"hc/presentationlayer/outgoing/user/credits"
 )
@@ -27,12 +26,12 @@ func CollectRoutes() []packet.Packet {
 		},
 		{
 			Name:    incoming.SecretKey,
-			Handler: secretkey.HandleSecretKey,
+			Handler: secretkey2.HandleSecretKey,
 
 			// tbh I have no idea, todo: check lingo code.
 			Middleware: []packet.MiddlewareFunc{
-				secretkey.SendClothesPackMiddleware{}.Handle,
-				secretkey.SessionDataMiddleware{}.Handle,
+				secretkey2.SendClothesPackMiddleware{}.Handle,
+				secretkey2.SessionDataMiddleware{}.Handle,
 			},
 		},
 		{
@@ -73,11 +72,8 @@ func CollectRoutes() []packet.Packet {
 			},
 		},
 		{
-			Name: incoming.UserInfo, // user info
-			Handler: func(sessionId string, request *request.Bag, response chan<- connection.Response) error {
-				fmt.Println("TODO: GET_INFO")
-				return nil
-			},
+			Name:    incoming.UserInfo,
+			Handler: InitializeInfoRetrieveHandler().Handle,
 		},
 		{
 			Name: incoming.CreditsBalance,
@@ -88,6 +84,18 @@ func CollectRoutes() []packet.Packet {
 		},
 		{
 			Name: incoming.BadgeData,
+			Handler: func(sessionId string, request *request.Bag, response chan<- connection.Response) error {
+				return nil
+			},
+		},
+		{
+			Name: "BV", // navigator packet, WIP -   tCmds.setaProp("NAVIGATE", 150)
+			Handler: func(sessionId string, request *request.Bag, response chan<- connection.Response) error {
+				return nil
+			},
+		},
+		{
+			Name: "BW", // navigator packet, WIP -   tCmds.setaProp("GETUSERFLATCATS", 151)
 			Handler: func(sessionId string, request *request.Bag, response chan<- connection.Response) error {
 				return nil
 			},

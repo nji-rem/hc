@@ -25,10 +25,11 @@ import (
 	"hc/internal/session"
 	config2 "hc/pkg/config"
 	"hc/pkg/database"
-	"hc/presentationlayer/incoming/login"
-	"hc/presentationlayer/incoming/registration"
-	"hc/presentationlayer/incoming/registration/register"
-	"hc/presentationlayer/incoming/registration/register/middleware"
+	"hc/presentationlayer/event/incoming/login"
+	"hc/presentationlayer/event/incoming/registration"
+	"hc/presentationlayer/event/incoming/registration/register"
+	"hc/presentationlayer/event/incoming/registration/register/middleware"
+	"hc/presentationlayer/event/incoming/user"
 	"hc/presentationlayer/saga"
 	"strconv"
 	"sync"
@@ -83,8 +84,20 @@ func InitializeTryLoginHandler() login.TryLoginHandler {
 	player := account.ProvidePlayerStore(db)
 	hashService := account.ProvidePasswordHasher()
 	verifyCredentials := account.ProvideVerifyCredentialsHandler(player, hashService)
-	tryLoginHandler := ProvideTryLoginHandler(verifyCredentials)
+	store := session.ProvideSessionStore()
+	loginService := ProvideLoginService(verifyCredentials, store)
+	tryLoginHandler := ProvideTryLoginHandler(loginService)
 	return tryLoginHandler
+}
+
+func InitializeInfoRetrieveHandler() user.InfoHandler {
+	store := session.ProvideSessionStore()
+	viper := ProvideConfig()
+	db := ProvideDatabase(viper)
+	storeProfile := profile.ProvideProfileStore(db)
+	infoRetriever := profile.ProvideRetrieveProfile(storeProfile)
+	infoHandler := ProvideUserInfoHandler(store, infoRetriever)
+	return infoHandler
 }
 
 func InitializeApp() *App {
@@ -108,7 +121,7 @@ func InitializeApp() *App {
 
 // wire.go:
 
-var ProfileSet = wire.NewSet(profile.Set, wire.Bind(new(profile2.CreateProfile), new(*application.CreateProfile)))
+var ProfileSet = wire.NewSet(profile.Set, wire.Bind(new(profile2.CreateProfile), new(*application.CreateProfile)), wire.Bind(new(profile2.InfoRetriever), new(*application.InfoRetriever)))
 
 var AppSet = wire.NewSet(connection.GameServerSet, session.Set, account.Set, ConfigSet,
 	RouteSet,
@@ -227,8 +240,22 @@ func ProvideValidateUsernameMiddleware(availableFunc availability.UsernameAvaila
 	}
 }
 
-func ProvideTryLoginHandler(credentialsVerifier account2.VerifyCredentials) login.TryLoginHandler {
-	return login.TryLoginHandler{
+func ProvideLoginService(credentialsVerifier account2.VerifyCredentials, store *session.Store) saga.LoginService {
+	return saga.LoginService{
 		CredentialsVerifier: credentialsVerifier,
+		SessionStore:        store,
+	}
+}
+
+func ProvideTryLoginHandler(service saga.LoginService) login.TryLoginHandler {
+	return login.TryLoginHandler{
+		LoginService: service,
+	}
+}
+
+func ProvideUserInfoHandler(store *session.Store, retriever profile2.InfoRetriever) user.InfoHandler {
+	return user.InfoHandler{
+		SessionStore:  store,
+		InfoRetriever: retriever,
 	}
 }

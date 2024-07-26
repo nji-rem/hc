@@ -4,7 +4,7 @@ import (
 	"errors"
 	"hc/api/connection"
 	"hc/api/connection/request"
-	"hc/presentationlayer/parser/registration"
+	"hc/presentationlayer/event/parser/registration"
 	"hc/presentationlayer/saga"
 )
 

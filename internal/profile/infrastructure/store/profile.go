@@ -28,3 +28,13 @@ func (p *Profile) Add(entity domain.Profile) error {
 
 	return nil
 }
+
+func (p *Profile) FindByAccountID(id int) (domain.Profile, error) {
+	var entity domain.Profile
+	err := p.DB.Get(&entity, "SELECT * FROM profilesvc_profiles WHERE account_id = ?", id)
+	if err != nil {
+		return domain.Profile{}, err
+	}
+
+	return entity, nil
+}

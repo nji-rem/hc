@@ -22,10 +22,11 @@ import (
 	"hc/internal/session"
 	"hc/pkg/config"
 	"hc/pkg/database"
-	"hc/presentationlayer/incoming/login"
-	"hc/presentationlayer/incoming/registration"
-	"hc/presentationlayer/incoming/registration/register"
-	"hc/presentationlayer/incoming/registration/register/middleware"
+	"hc/presentationlayer/event/incoming/login"
+	registration2 "hc/presentationlayer/event/incoming/registration"
+	"hc/presentationlayer/event/incoming/registration/register"
+	"hc/presentationlayer/event/incoming/registration/register/middleware"
+	"hc/presentationlayer/event/incoming/user"
 	"hc/presentationlayer/saga"
 	"strconv"
 	"sync"
@@ -34,6 +35,7 @@ import (
 var ProfileSet = wire.NewSet(
 	profile.Set,
 	wire.Bind(new(apiProfile.CreateProfile), new(*application.CreateProfile)),
+	wire.Bind(new(apiProfile.InfoRetriever), new(*application.InfoRetriever)),
 )
 
 var AppSet = wire.NewSet(
@@ -127,20 +129,20 @@ func ProvideDatabase(config apiConfig.Reader) *sqlx.DB {
 	return databaseConnection
 }
 
-func ProvideNameCheckHandler(availableFunc availability.UsernameAvailableFunc) registration.NameCheckHandler {
-	return registration.NewNameCheckHandler(availableFunc)
+func ProvideNameCheckHandler(availableFunc availability.UsernameAvailableFunc) registration2.NameCheckHandler {
+	return registration2.NewNameCheckHandler(availableFunc)
 }
 
 func NewApp(packetResolver apiPacket.Resolver, server *connection.GameSocket, viper *viper.Viper, db *sqlx.DB) *App {
 	return &App{PacketResolver: packetResolver, GameServer: server, Config: viper, DB: db}
 }
 
-func NewNameCheckHandler(availableFunc availability.UsernameAvailableFunc) registration.NameCheckHandler {
-	return registration.NewNameCheckHandler(availableFunc)
+func NewNameCheckHandler(availableFunc availability.UsernameAvailableFunc) registration2.NameCheckHandler {
+	return registration2.NewNameCheckHandler(availableFunc)
 }
 
-func NewPasswordCheckHandler(validationFunc password.ValidationFunc) registration.PasswordVerifyHandler {
-	return registration.PasswordVerifyHandler{PasswordValidator: validationFunc}
+func NewPasswordCheckHandler(validationFunc password.ValidationFunc) registration2.PasswordVerifyHandler {
+	return registration2.PasswordVerifyHandler{PasswordValidator: validationFunc}
 }
 
 func ProvideRegistrationService(createAccount apiAccount.CreateAccount, createProfile apiProfile.CreateProfile) saga.RegistrationService {
@@ -162,9 +164,23 @@ func ProvideValidateUsernameMiddleware(availableFunc availability.UsernameAvaila
 	}
 }
 
-func ProvideTryLoginHandler(credentialsVerifier apiAccount.VerifyCredentials) login.TryLoginHandler {
-	return login.TryLoginHandler{
+func ProvideLoginService(credentialsVerifier apiAccount.VerifyCredentials, store *session.Store) saga.LoginService {
+	return saga.LoginService{
 		CredentialsVerifier: credentialsVerifier,
+		SessionStore:        store,
+	}
+}
+
+func ProvideTryLoginHandler(service saga.LoginService) login.TryLoginHandler {
+	return login.TryLoginHandler{
+		LoginService: service,
+	}
+}
+
+func ProvideUserInfoHandler(store *session.Store, retriever apiProfile.InfoRetriever) user.InfoHandler {
+	return user.InfoHandler{
+		SessionStore:  store,
+		InfoRetriever: retriever,
 	}
 }
 
@@ -180,22 +196,28 @@ func InitializeRegisterHandler() register.Handler {
 	return register.Handler{}
 }
 
-func InitializeNameCheckHandler() registration.NameCheckHandler {
+func InitializeNameCheckHandler() registration2.NameCheckHandler {
 	wire.Build(NewNameCheckHandler, account.Set, ConfigSet, DatabaseSet)
 
-	return registration.NameCheckHandler{}
+	return registration2.NameCheckHandler{}
 }
 
-func InitializePasswordVerifyHandler() registration.PasswordVerifyHandler {
+func InitializePasswordVerifyHandler() registration2.PasswordVerifyHandler {
 	wire.Build(NewPasswordCheckHandler, account.Set)
 
-	return registration.PasswordVerifyHandler{}
+	return registration2.PasswordVerifyHandler{}
 }
 
 func InitializeTryLoginHandler() login.TryLoginHandler {
-	wire.Build(ProvideTryLoginHandler, account.Set, ConfigSet, DatabaseSet)
+	wire.Build(ProvideTryLoginHandler, ProvideLoginService, session.Set, account.Set, ConfigSet, DatabaseSet)
 
 	return login.TryLoginHandler{}
+}
+
+func InitializeInfoRetrieveHandler() user.InfoHandler {
+	wire.Build(ProvideUserInfoHandler, session.Set, ProfileSet, ConfigSet, DatabaseSet)
+
+	return user.InfoHandler{}
 }
 
 func InitializeApp() *App {

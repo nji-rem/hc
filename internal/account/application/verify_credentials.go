@@ -10,20 +10,20 @@ type VerifyCredentials struct {
 	PasswordVerifier password.Verifier
 }
 
-func (v VerifyCredentials) Verify(username, password string) (bool, error) {
+func (v VerifyCredentials) Verify(username, password string) (bool, int, error) {
 	ok, user, err := v.Store.FindByUsername(username)
 	if err != nil {
-		return false, err
+		return false, 0, err
 	}
 
 	if !ok {
-		return false, nil
+		return false, 0, nil
 	}
 
 	verified, err := v.PasswordVerifier.Verify([]byte(password), []byte(user.Password))
 	if err != nil {
-		return false, err
+		return false, 0, err
 	}
 
-	return verified, nil
+	return verified, user.ID, nil
 }
