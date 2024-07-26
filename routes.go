@@ -73,23 +73,21 @@ func CollectRoutes() []packet.Packet {
 			},
 		},
 		{
-			Name: "@G",
+			Name: incoming.UserInfo, // user info
 			Handler: func(sessionId string, request *request.Bag, response chan<- connection.Response) error {
 				fmt.Println("TODO: GET_INFO")
 				return nil
 			},
 		},
 		{
-			Name: "@H",
+			Name: incoming.CreditsBalance,
 			Handler: func(sessionId string, request *request.Bag, response chan<- connection.Response) error {
-				response <- credits.BalanceResponse{Credits: 999999}
-
-				fmt.Println("TODO: GET_CREDITS")
+				response <- credits.BalanceResponse{Credits: 0}
 				return nil
 			},
 		},
 		{
-			Name: "B]",
+			Name: incoming.BadgeData,
 			Handler: func(sessionId string, request *request.Bag, response chan<- connection.Response) error {
 				return nil
 			},

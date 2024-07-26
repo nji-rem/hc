@@ -10,6 +10,15 @@ type Writer struct {
 	Buffer *bytebufferpool.ByteBuffer
 }
 
+func (w *Writer) AppendObject(key, value string) error {
+	w.Buffer.WriteString(key)
+	w.Buffer.WriteString("=")
+	w.Buffer.WriteString(value)
+	w.Buffer.WriteByte(13)
+
+	return nil
+}
+
 func (w *Writer) AppendHeader(header int) error {
 	encoded := base64.Encode(header)
 	if _, err := w.Buffer.WriteString(encoded); err != nil {
