@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/rs/zerolog/log"
 	"hc/api/connection"
 	"hc/api/connection/request"
@@ -10,6 +11,7 @@ import (
 	"hc/presentationlayer/incoming/login"
 	"hc/presentationlayer/incoming/registration/register/middleware"
 	"hc/presentationlayer/outgoing/registration"
+	"hc/presentationlayer/outgoing/user/credits"
 )
 
 func CollectRoutes() []packet.Packet {
@@ -68,6 +70,28 @@ func CollectRoutes() []packet.Packet {
 			Handler: InitializeTryLoginHandler().Handle,
 			Middleware: []packet.MiddlewareFunc{
 				login.ParseTryLoginMiddleware,
+			},
+		},
+		{
+			Name: "@G",
+			Handler: func(sessionId string, request *request.Bag, response chan<- connection.Response) error {
+				fmt.Println("TODO: GET_INFO")
+				return nil
+			},
+		},
+		{
+			Name: "@H",
+			Handler: func(sessionId string, request *request.Bag, response chan<- connection.Response) error {
+				response <- credits.BalanceResponse{Credits: 999999}
+
+				fmt.Println("TODO: GET_CREDITS")
+				return nil
+			},
+		},
+		{
+			Name: "B]",
+			Handler: func(sessionId string, request *request.Bag, response chan<- connection.Response) error {
+				return nil
 			},
 		},
 	}

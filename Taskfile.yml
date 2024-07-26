@@ -6,6 +6,10 @@ tasks:
   migrate:
     - echo "Migrating account bounded context"
     - cd internal/account/infrastructure/migrations && goose up
+    - echo "Migrating wallet bounded context"
+    - cd internal/wallet/infrastructure/migrations && goose up
+    - echo "Migrating profile bounded context"
+    - cd internal/profile/infrastructure/migrations && goose up
 
   goose:
     - goose {{.CLI_ARGS}}

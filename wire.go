@@ -13,9 +13,12 @@ import (
 	"hc/api/account/password"
 	apiConfig "hc/api/config"
 	apiPacket "hc/api/packet"
+	apiProfile "hc/api/profile"
 	"hc/internal/account"
 	"hc/internal/connection"
 	"hc/internal/packet"
+	"hc/internal/profile"
+	"hc/internal/profile/application"
 	"hc/internal/session"
 	"hc/pkg/config"
 	"hc/pkg/database"
@@ -23,8 +26,14 @@ import (
 	"hc/presentationlayer/incoming/registration"
 	"hc/presentationlayer/incoming/registration/register"
 	"hc/presentationlayer/incoming/registration/register/middleware"
+	"hc/presentationlayer/saga"
 	"strconv"
 	"sync"
+)
+
+var ProfileSet = wire.NewSet(
+	profile.Set,
+	wire.Bind(new(apiProfile.CreateProfile), new(*application.CreateProfile)),
 )
 
 var AppSet = wire.NewSet(
@@ -134,9 +143,16 @@ func NewPasswordCheckHandler(validationFunc password.ValidationFunc) registratio
 	return registration.PasswordVerifyHandler{PasswordValidator: validationFunc}
 }
 
-func NewRegisterHandler(accountCreator apiAccount.CreateAccount) register.Handler {
+func ProvideRegistrationService(createAccount apiAccount.CreateAccount, createProfile apiProfile.CreateProfile) saga.RegistrationService {
+	return saga.RegistrationService{
+		CreateAccount: createAccount,
+		CreateProfile: createProfile,
+	}
+}
+
+func NewRegisterHandler(registrationService saga.RegistrationService) register.Handler {
 	return register.Handler{
-		AccountCreator: accountCreator,
+		RegistrationService: registrationService,
 	}
 }
 
@@ -159,7 +175,7 @@ func InitializeValidateUsernameMiddleware() middleware.ValidateUsername {
 }
 
 func InitializeRegisterHandler() register.Handler {
-	wire.Build(NewRegisterHandler, account.Set, ConfigSet, DatabaseSet)
+	wire.Build(NewRegisterHandler, ProvideRegistrationService, ProfileSet, account.Set, ConfigSet, DatabaseSet)
 
 	return register.Handler{}
 }

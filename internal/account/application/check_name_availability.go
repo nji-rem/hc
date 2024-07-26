@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"hc/api/account/availability"
-	apiStore "hc/api/account/store"
-	"hc/internal/account/domain/accountaggregate"
+	"hc/internal/account/domain/entity"
+	apiStore "hc/internal/account/domain/store"
 )
 
 type CheckNameAvailabilityHandler struct {
@@ -13,14 +13,14 @@ type CheckNameAvailabilityHandler struct {
 }
 
 func (c CheckNameAvailabilityHandler) Handle(name string) (availability.Status, error) {
-	_, err := accountaggregate.NewUsername(name)
+	_, err := entity.NewUsername(name)
 	if err != nil {
 		switch {
-		case errors.Is(err, accountaggregate.ErrUsernameTooLong):
+		case errors.Is(err, entity.ErrUsernameTooLong):
 			return availability.UsernameTooLong, nil
-		case errors.Is(err, accountaggregate.ErrUsernameTooShort):
+		case errors.Is(err, entity.ErrUsernameTooShort):
 			return availability.UsernameTooShort, nil
-		case errors.Is(err, accountaggregate.ErrInvalidCharacters):
+		case errors.Is(err, entity.ErrInvalidCharacters):
 			return availability.UsernameContainsIllegalCharacters, nil
 		default:
 			// There's no default availability type for an actual message, so we'll just tell the client that the username
@@ -29,7 +29,7 @@ func (c CheckNameAvailabilityHandler) Handle(name string) (availability.Status, 
 		}
 	}
 
-	if taken, _ := c.Store.NameTaken(accountaggregate.Username(name)); taken {
+	if taken, _ := c.Store.NameTaken(entity.Username(name)); taken {
 		return availability.UsernameTaken, nil
 	}
 

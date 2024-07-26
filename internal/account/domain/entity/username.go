@@ -1,4 +1,4 @@
-package accountaggregate
+package entity
 
 import (
 	"errors"

@@ -1,12 +1,9 @@
 -- +goose Up
 -- +goose StatementBegin
-CREATE TABLE accounts(
+CREATE TABLE accountsvc_accounts(
     id int(11) NOT NULL AUTO_INCREMENT,
     username varchar(255) not null,
     password varchar(255) not null,
-    look varchar(255) not null,
-    gender enum('m', 'f') not null,
-    motto varchar(255),
     created_at TIMESTAMP,
     updated_at TIMESTAMP,
     PRIMARY KEY (id)
@@ -15,5 +12,5 @@ CREATE TABLE accounts(
 
 -- +goose Down
 -- +goose StatementBegin
-DROP TABLE accounts;
+DROP TABLE accountsvc_accounts;
 -- +goose StatementEnd

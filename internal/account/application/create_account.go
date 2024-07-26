@@ -1,9 +1,9 @@
 package application
 
 import (
-	apiStore "hc/api/account/store"
-	"hc/internal/account/domain/accountaggregate"
+	"hc/internal/account/domain/entity"
 	"hc/internal/account/domain/password"
+	apiStore "hc/internal/account/domain/store"
 )
 
 type CreateAccount struct {
@@ -11,28 +11,26 @@ type CreateAccount struct {
 	Hasher password.Hasher
 }
 
-func (c *CreateAccount) Create(name, password, figure, gender string) (bool, error) {
-	username, err := accountaggregate.NewUsername(name)
+func (c *CreateAccount) Create(name, password string) (int, error) {
+	username, err := entity.NewUsername(name)
 	if err != nil {
-		return false, err
+		return 0, err
 	}
 
 	hashedPassword, err := c.Hasher.Hash(password)
 	if err != nil {
-		return false, err
+		return 0, err
 	}
 
-	entity := accountaggregate.Entity{
+	account := entity.Account{
 		Username: username,
 		Password: hashedPassword,
-		Gender:   gender,
-		Look:     figure,
-		Motto:    "",
 	}
 
-	if err := c.Store.Add(entity); err != nil {
-		return false, err
+	accountId, err := c.Store.Add(account)
+	if err != nil {
+		return 0, err
 	}
 
-	return true, nil
+	return accountId, nil
 }

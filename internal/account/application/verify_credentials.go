@@ -1,8 +1,8 @@
 package application
 
 import (
-	"hc/api/account/store"
 	"hc/internal/account/domain/password"
+	"hc/internal/account/domain/store"
 )
 
 type VerifyCredentials struct {

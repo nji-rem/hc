@@ -16,9 +16,12 @@ import (
 	"hc/api/account/password"
 	"hc/api/config"
 	"hc/api/packet"
+	profile2 "hc/api/profile"
 	"hc/internal/account"
 	"hc/internal/connection"
 	packet2 "hc/internal/packet"
+	"hc/internal/profile"
+	"hc/internal/profile/application"
 	"hc/internal/session"
 	config2 "hc/pkg/config"
 	"hc/pkg/database"
@@ -26,6 +29,7 @@ import (
 	"hc/presentationlayer/incoming/registration"
 	"hc/presentationlayer/incoming/registration/register"
 	"hc/presentationlayer/incoming/registration/register/middleware"
+	"hc/presentationlayer/saga"
 	"strconv"
 	"sync"
 )
@@ -51,7 +55,10 @@ func InitializeRegisterHandler() register.Handler {
 	player := account.ProvidePlayerStore(db)
 	hashService := account.ProvidePasswordHasher()
 	createAccount := account.ProvideCreateAccountHandler(player, hashService)
-	handler := NewRegisterHandler(createAccount)
+	storeProfile := profile.ProvideProfileStore(db)
+	createProfile := profile.ProvideCreateProfile(storeProfile)
+	registrationService := ProvideRegistrationService(createAccount, createProfile)
+	handler := NewRegisterHandler(registrationService)
 	return handler
 }
 
@@ -100,6 +107,8 @@ func InitializeApp() *App {
 }
 
 // wire.go:
+
+var ProfileSet = wire.NewSet(profile.Set, wire.Bind(new(profile2.CreateProfile), new(*application.CreateProfile)))
 
 var AppSet = wire.NewSet(connection.GameServerSet, session.Set, account.Set, ConfigSet,
 	RouteSet,
@@ -199,9 +208,16 @@ func NewPasswordCheckHandler(validationFunc password.ValidationFunc) registratio
 	return registration.PasswordVerifyHandler{PasswordValidator: validationFunc}
 }
 
-func NewRegisterHandler(accountCreator account2.CreateAccount) register.Handler {
+func ProvideRegistrationService(createAccount account2.CreateAccount, createProfile profile2.CreateProfile) saga.RegistrationService {
+	return saga.RegistrationService{
+		CreateAccount: createAccount,
+		CreateProfile: createProfile,
+	}
+}
+
+func NewRegisterHandler(registrationService saga.RegistrationService) register.Handler {
 	return register.Handler{
-		AccountCreator: accountCreator,
+		RegistrationService: registrationService,
 	}
 }
 

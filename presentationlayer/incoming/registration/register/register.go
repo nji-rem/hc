@@ -2,16 +2,16 @@ package register
 
 import (
 	"errors"
-	"hc/api/account"
 	"hc/api/connection"
 	"hc/api/connection/request"
 	"hc/presentationlayer/parser/registration"
+	"hc/presentationlayer/saga"
 )
 
 var ErrBodyNotFound = errors.New("body not found")
 
 type Handler struct {
-	AccountCreator account.CreateAccount
+	RegistrationService saga.RegistrationService
 }
 
 func (h Handler) Handle(sessionId string, request *request.Bag, response chan<- connection.Response) error {
@@ -20,8 +20,7 @@ func (h Handler) Handle(sessionId string, request *request.Bag, response chan<- 
 		return ErrBodyNotFound
 	}
 
-	_, err := h.AccountCreator.Create(registerBody.Username, registerBody.Password, registerBody.Figure, registerBody.Sex)
-	if err != nil {
+	if err := h.RegistrationService.Register(registerBody); err != nil {
 		return err
 	}
 
