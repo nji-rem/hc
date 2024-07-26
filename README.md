@@ -9,8 +9,11 @@ can be updated at any time.
 
 #### Roadmap (in this order)
 - [X] Registration
-- [ ] Login
+- [X] Login
 - [ ] Navigator
+- [ ] Update look, motto, gender, etc
+  - [ ] Private rooms
+  - [ ] Public rooms
 - [ ] Rooms
   - [ ] Creating rooms
   - [ ] Entering rooms
