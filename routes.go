@@ -115,5 +115,11 @@ func CollectRoutes() []packet.Packet {
 				return nil
 			},
 		},
+		{
+			Name: "@]",
+			Handler: func(sessionId string, request *request.Bag, response chan<- connection.Response) error {
+				return nil
+			},
+		},
 	}
 }
