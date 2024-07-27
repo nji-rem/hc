@@ -38,3 +38,22 @@ func (p *Profile) FindByAccountID(id int) (domain.Profile, error) {
 
 	return entity, nil
 }
+
+func (p *Profile) Update(profile domain.Profile) error {
+	query := "UPDATE profilesvc_profiles SET look=:look,motto=:motto,sex=:sex WHERE id=:id"
+	result, err := p.DB.NamedExec(query, profile)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected > 1 {
+		return fmt.Errorf("expected 1 row to be affected, but %d rows are affected", rowsAffected)
+	}
+
+	return nil
+}

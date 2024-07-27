@@ -41,6 +41,16 @@ import (
 
 // Injectors from wire.go:
 
+func InitializeUpdateUserHandler() user.Update {
+	viper := ProvideConfig()
+	db := ProvideDatabase(viper)
+	storeProfile := profile.ProvideProfileStore(db)
+	updateProfile := profile.ProvideUpdateProfile(storeProfile)
+	store := session.ProvideSessionStore()
+	update := ProvideUpdateUserHandler(updateProfile, store)
+	return update
+}
+
 func InitializeValidateUsernameMiddleware() middleware.ValidateUsername {
 	viper := ProvideConfig()
 	db := ProvideDatabase(viper)
@@ -133,7 +143,7 @@ func InitializeApp() *App {
 
 // wire.go:
 
-var ProfileSet = wire.NewSet(profile.Set, wire.Bind(new(profile2.CreateProfile), new(*application.CreateProfile)), wire.Bind(new(profile2.InfoRetriever), new(*application.InfoRetriever)))
+var ProfileSet = wire.NewSet(profile.Set, wire.Bind(new(profile2.CreateProfile), new(*application.CreateProfile)), wire.Bind(new(profile2.InfoRetriever), new(*application.InfoRetriever)), wire.Bind(new(profile2.Updater), new(*application.UpdateProfile)))
 
 var AppSet = wire.NewSet(connection.GameServerSet, session.Set, account.Set, ConfigSet,
 	RouteSet,
@@ -269,6 +279,13 @@ func ProvideUserInfoHandler(store *session.Store, retriever profile2.InfoRetriev
 	return user.InfoHandler{
 		SessionStore:  store,
 		InfoRetriever: retriever,
+	}
+}
+
+func ProvideUpdateUserHandler(updater profile2.Updater, store *session.Store) user.Update {
+	return user.Update{
+		ProfileUpdater: updater,
+		SessionStore:   store,
 	}
 }
 

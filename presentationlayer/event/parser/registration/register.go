@@ -83,11 +83,12 @@ const (
 )
 
 type Register struct {
-	Username string
-	Password string
-	Email    string
-	Figure   string
-	Sex      string
+	Username   string
+	Password   string
+	Email      string
+	Figure     string
+	Sex        string
+	CustomData string
 }
 
 func ParseRegister(body []byte) (register Register, err error) {
@@ -147,6 +148,11 @@ func ParseRegister(body []byte) (register Register, err error) {
 	sex, ok := messages[Sex]
 	if ok {
 		register.Sex = sex.(string)
+	}
+
+	customData, ok := messages[CustomData]
+	if ok {
+		register.CustomData = customData.(string)
 	}
 
 	return

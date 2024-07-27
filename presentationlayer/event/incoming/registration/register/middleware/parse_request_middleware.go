@@ -8,7 +8,7 @@ import (
 	"hc/presentationlayer/event/parser/registration"
 )
 
-func ParseRequestMiddleware(next packet.HandlerFunc) packet.HandlerFunc {
+func ParseRegisterRequest(next packet.HandlerFunc) packet.HandlerFunc {
 	return func(sessionId string, request *request.Bag, response chan<- connection.Response) error {
 		parsed, err := registration.ParseRegister(request.Body.Raw())
 		if err != nil {

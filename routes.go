@@ -62,7 +62,7 @@ func CollectRoutes() []packet.Packet {
 			Middleware: []packet.MiddlewareFunc{
 				InitializeLoginAfterRegistrationMiddleware().Handle,
 				InitializeValidateUsernameMiddleware().Handle,
-				middleware.ParseRequestMiddleware,
+				middleware.ParseRegisterRequest,
 			},
 		},
 		{
@@ -79,8 +79,16 @@ func CollectRoutes() []packet.Packet {
 		{
 			Name: incoming.CreditsBalance,
 			Handler: func(sessionId string, request *request.Bag, response chan<- connection.Response) error {
-				response <- credits.BalanceResponse{Credits: 0}
+				response <- credits.BalanceResponse{Credits: 666}
 				return nil
+			},
+		},
+		{
+			Name:    incoming.Update,
+			Handler: InitializeUpdateUserHandler().Handle,
+			Middleware: []packet.MiddlewareFunc{
+				// we can re-use this for update lol
+				middleware.ParseRegisterRequest,
 			},
 		},
 		{
@@ -97,6 +105,12 @@ func CollectRoutes() []packet.Packet {
 		},
 		{
 			Name: "BW", // navigator packet, WIP -   tCmds.setaProp("GETUSERFLATCATS", 151)
+			Handler: func(sessionId string, request *request.Bag, response chan<- connection.Response) error {
+				return nil
+			},
+		},
+		{
+			Name: "@P",
 			Handler: func(sessionId string, request *request.Bag, response chan<- connection.Response) error {
 				return nil
 			},

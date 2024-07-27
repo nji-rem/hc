@@ -10,4 +10,5 @@ const (
 	UserInfo       = "@G"
 	CreditsBalance = "@H"
 	BadgeData      = "B]"
+	Update         = "@l"
 )

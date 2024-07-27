@@ -36,6 +36,7 @@ var ProfileSet = wire.NewSet(
 	profile.Set,
 	wire.Bind(new(apiProfile.CreateProfile), new(*application.CreateProfile)),
 	wire.Bind(new(apiProfile.InfoRetriever), new(*application.InfoRetriever)),
+	wire.Bind(new(apiProfile.Updater), new(*application.UpdateProfile)),
 )
 
 var AppSet = wire.NewSet(
@@ -182,6 +183,19 @@ func ProvideUserInfoHandler(store *session.Store, retriever apiProfile.InfoRetri
 		SessionStore:  store,
 		InfoRetriever: retriever,
 	}
+}
+
+func ProvideUpdateUserHandler(updater apiProfile.Updater, store *session.Store) user.Update {
+	return user.Update{
+		ProfileUpdater: updater,
+		SessionStore:   store,
+	}
+}
+
+func InitializeUpdateUserHandler() user.Update {
+	wire.Build(ProvideUpdateUserHandler, ProfileSet, session.Set, ConfigSet, DatabaseSet)
+
+	return user.Update{}
 }
 
 func InitializeValidateUsernameMiddleware() middleware.ValidateUsername {

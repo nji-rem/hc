@@ -38,9 +38,9 @@ var passwordHasher *passwordInfra.HashService
 func ProvidePlayerStore(db *sqlx.DB) *store.Player {
 	playerStoreOnce.Do(func() {
 		playerStore = &store.Player{DB: db}
-	})
 
-	log.Info().Msg("Loaded player store")
+		log.Info().Msg("Loaded player store")
+	})
 
 	return playerStore
 }
