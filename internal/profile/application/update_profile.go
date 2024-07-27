@@ -16,9 +16,7 @@ func (u UpdateProfile) Update(accountId int, updatable profile.Updatable) error 
 		return fmt.Errorf("unable to find foundProfile for account id %d, err: %s", accountId, err.Error())
 	}
 
-	if updatable.Motto != "" {
-		foundProfile.Motto = updatable.Motto
-	}
+	foundProfile.Motto = updatable.Motto
 
 	if updatable.Figure != "" {
 		foundProfile.Look = updatable.Figure
