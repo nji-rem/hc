@@ -1,5 +1,8 @@
 package domain
 
 type Room struct {
-	Model RoomModel
+	ID          int
+	Name        RoomName
+	Model       RoomModel
+	Description string
 }
