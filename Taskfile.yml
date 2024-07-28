@@ -10,7 +10,8 @@ tasks:
     - cd internal/wallet/infrastructure/migrations && goose up
     - echo "Migrating profile bounded context"
     - cd internal/profile/infrastructure/migrations && goose up
-
+    - echo "Migrating room bounded context"
+    - cd internal/room/infrastructure/migrations && goose up
   goose:
     - goose {{.CLI_ARGS}}
 
