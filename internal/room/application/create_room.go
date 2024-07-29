@@ -1,6 +1,7 @@
 package application
 
 import (
+	"github.com/rs/zerolog/log"
 	"hc/api/room"
 	"hc/internal/room/domain"
 )
@@ -9,7 +10,7 @@ type CreateRoom struct {
 	Store domain.Store
 }
 
-func (c CreateRoom) Create(accountId int, name, model, description, accessType string, roomOwnerVisible bool) error {
+func (c CreateRoom) Create(accountId int, name, model, accessType string, roomOwnerVisible bool) error {
 	roomName, err := domain.NewRoomName(name)
 	if err != nil {
 		return room.ErrInvalidRoomName
@@ -21,9 +22,10 @@ func (c CreateRoom) Create(accountId int, name, model, description, accessType s
 	}
 
 	r := domain.Room{
+		AccountID:        accountId,
 		Name:             roomName,
 		Model:            roomModel,
-		Description:      description,
+		Description:      "",
 		RoomAccessType:   domain.NewRoomAccessType(accessType),
 		RoomOwnerVisible: roomOwnerVisible,
 	}
@@ -31,6 +33,8 @@ func (c CreateRoom) Create(accountId int, name, model, description, accessType s
 	if err := c.Store.Add(r); err != nil {
 		return err
 	}
+
+	log.Debug().Msgf("Room '%s' successfully created", roomName)
 
 	return nil
 }

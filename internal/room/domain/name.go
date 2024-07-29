@@ -11,16 +11,17 @@ type RoomName string
 var ErrRoomNameEmpty = errors.New("room name is empty")
 
 var allowedCharacters = map[uint8]bool{
-	' ': true,
-	'@': true,
-	'!': true,
-	'#': true,
-	'(': true,
-	')': true,
-	'/': true,
-	'*': true,
-	'[': true,
-	']': true,
+	' ':  true,
+	'\'': true,
+	'@':  true,
+	'!':  true,
+	'#':  true,
+	'(':  true,
+	')':  true,
+	'/':  true,
+	'*':  true,
+	'[':  true,
+	']':  true,
 }
 
 func NewRoomName(value string) (RoomName, error) {

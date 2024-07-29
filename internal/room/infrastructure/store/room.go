@@ -12,8 +12,8 @@ type Room struct {
 
 func (r Room) Add(room domain.Room) error {
 	query := `
-		INSERT INTO roomsvc_rooms (name, model, description, room_access_type, room_owner_visible) 
-		VALUES (:name, :model, :description, :room_access_type, :room_owner_visible)
+		INSERT INTO roomsvc_rooms (name, account_id, model, description, room_access_type, room_owner_visible) 
+		VALUES (:name, :account_id, :model, :description, :room_access_type, :room_owner_visible)
 	`
 
 	result, err := r.DB.NamedExec(query, &room)
