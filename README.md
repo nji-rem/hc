@@ -11,12 +11,12 @@ can be updated at any time.
 - [X] Registration
 - [X] Login
 - [ ] Navigator
-- [ ] Update look, motto, gender, etc
-  - [ ] Private rooms
-  - [ ] Public rooms
+- [X] Update look, motto, gender, etc
 - [ ] Rooms
   - [ ] Creating rooms
   - [ ] Entering rooms
+- [ ] Pathfinder
+- [ ] Catalogue
 
 ... and more. To be announced.
 
