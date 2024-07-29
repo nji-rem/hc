@@ -19,6 +19,7 @@ import (
 	"hc/internal/packet"
 	"hc/internal/profile"
 	"hc/internal/profile/application"
+	"hc/internal/room"
 	"hc/internal/session"
 	"hc/pkg/config"
 	"hc/pkg/database"
@@ -39,10 +40,17 @@ var ProfileSet = wire.NewSet(
 	wire.Bind(new(apiProfile.Updater), new(*application.UpdateProfile)),
 )
 
+var RoomSet = wire.NewSet(
+	room.Set,
+	DatabaseSet,
+	ConfigSet,
+)
+
 var AppSet = wire.NewSet(
 	connection.GameServerSet,
 	session.Set,
 	account.Set,
+	room.Set,
 	ConfigSet,
 	RouteSet,
 	DatabaseSet,

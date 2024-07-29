@@ -21,13 +21,13 @@ func (t TrafficManager) OrchestrateTraffic(c gnet.Conn) error {
 		return ErrContextNotFound
 	}
 
-	// Acquire a new request object
+	// Acquire a new viewmodel object
 	request := t.RequestPool.Acquire()
 
-	// Release the request object when we're done with it.
+	// Release the viewmodel object when we're done with it.
 	defer t.RequestPool.Release(request)
 
-	// Parse the traffic into the request object
+	// Parse the traffic into the viewmodel object
 	if err := t.TrafficParser.Parse(c, request); err != nil {
 		return err
 	}

@@ -20,7 +20,7 @@ type Update struct {
 func (u Update) Handle(sessionId string, request *request.Bag, response chan<- connection.Response) error {
 	model, ok := request.Body.Parsed().(registration.Register)
 	if !ok {
-		return fmt.Errorf("expected registration.Register model, got %s", reflect.TypeOf(model))
+		return fmt.Errorf("expected registration.Register viewmodel, got %s", reflect.TypeOf(model))
 	}
 
 	session, err := u.SessionStore.Get(sessionId)

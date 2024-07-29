@@ -2,6 +2,7 @@ package domain
 
 type Room struct {
 	ID               int
+	AccountID        int `db:"account_id"`
 	Name             RoomName
 	Model            RoomModel
 	Description      string

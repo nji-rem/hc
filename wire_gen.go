@@ -22,6 +22,7 @@ import (
 	packet2 "hc/internal/packet"
 	"hc/internal/profile"
 	"hc/internal/profile/application"
+	"hc/internal/room"
 	"hc/internal/session"
 	config2 "hc/pkg/config"
 	"hc/pkg/database"
@@ -145,7 +146,11 @@ func InitializeApp() *App {
 
 var ProfileSet = wire.NewSet(profile.Set, wire.Bind(new(profile2.CreateProfile), new(*application.CreateProfile)), wire.Bind(new(profile2.InfoRetriever), new(*application.InfoRetriever)), wire.Bind(new(profile2.Updater), new(*application.UpdateProfile)))
 
-var AppSet = wire.NewSet(connection.GameServerSet, session.Set, account.Set, ConfigSet,
+var RoomSet = wire.NewSet(room.Set, DatabaseSet,
+	ConfigSet,
+)
+
+var AppSet = wire.NewSet(connection.GameServerSet, session.Set, account.Set, room.Set, ConfigSet,
 	RouteSet,
 	DatabaseSet,
 )

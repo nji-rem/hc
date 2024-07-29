@@ -17,7 +17,7 @@ func ParseTryLoginMiddleware(next packet.HandlerFunc) packet.HandlerFunc {
 
 		request.Body.SetParsedBody(model)
 
-		log.Debug().Msg("Parsed try login request, continue...")
+		log.Debug().Msg("Parsed try login viewmodel, continue...")
 
 		return next(sessionId, request, response)
 	}

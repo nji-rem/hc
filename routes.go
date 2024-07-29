@@ -9,6 +9,8 @@ import (
 	secretkey2 "hc/presentationlayer/event/incoming/handshake/secretkey"
 	"hc/presentationlayer/event/incoming/login"
 	"hc/presentationlayer/event/incoming/registration/register/middleware"
+	"hc/presentationlayer/event/incoming/room"
+	room2 "hc/presentationlayer/event/parser/room"
 	"hc/presentationlayer/outgoing/registration"
 	"hc/presentationlayer/outgoing/user/credits"
 )
@@ -116,9 +118,21 @@ func CollectRoutes() []packet.Packet {
 			},
 		},
 		{
-			Name: "@]",
-			Handler: func(sessionId string, request *request.Bag, response chan<- connection.Response) error {
-				return nil
+			Name:    incoming.CreateFlat,
+			Handler: room.CreateRoomHandler{}.Handle,
+			Middleware: []packet.MiddlewareFunc{
+				func(next packet.HandlerFunc) packet.HandlerFunc {
+					return func(sessionId string, request *request.Bag, response chan<- connection.Response) error {
+						r, err := room2.ParseCreateFlat(request.Body.Raw())
+						if err != nil {
+							return err
+						}
+
+						request.Body.SetParsedBody(r)
+
+						return next(sessionId, request, response)
+					}
+				},
 			},
 		},
 	}

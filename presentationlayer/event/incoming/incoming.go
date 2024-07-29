@@ -11,4 +11,5 @@ const (
 	CreditsBalance = "@H"
 	BadgeData      = "B]"
 	Update         = "@l"
+	CreateFlat     = "@]"
 )

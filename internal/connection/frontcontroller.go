@@ -33,7 +33,7 @@ func (f FrontController) Handle(sessionId string, request *request.Bag, writer i
 			select {
 			case data, ok := <-ch:
 				if !ok {
-					log.Debug().Msg("Response channel closed for incoming request")
+					log.Debug().Msg("Response channel closed for incoming viewmodel")
 					break MainLoop
 				}
 

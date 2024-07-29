@@ -2,7 +2,7 @@ package request
 
 import "sync"
 
-// Body contains the request body.
+// Body contains the viewmodel body.
 type Body struct {
 	raw        []byte
 	parsedBody any

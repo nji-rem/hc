@@ -8,7 +8,7 @@ import (
 type (
 	// HandlerFunc contains the function signature that is required for packet handlers.
 	//
-	// Argument request contains a reference to the current request. It contains data such as the packet header, the
+	// Argument viewmodel contains a reference to the current viewmodel. It contains data such as the packet header, the
 	// packet body, and some other information.
 	HandlerFunc func(sessionId string, request *request.Bag, response chan<- connection.Response) error
 

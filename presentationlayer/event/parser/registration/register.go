@@ -1,4 +1,4 @@
-// Package registration parses the registration request.
+// Package registration parses the registration viewmodel.
 //
 // It's based on the following Lingo code (source: Habbo Origins)
 //
