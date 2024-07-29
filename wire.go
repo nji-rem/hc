@@ -14,6 +14,8 @@ import (
 	apiConfig "hc/api/config"
 	apiPacket "hc/api/packet"
 	apiProfile "hc/api/profile"
+	apiRoom "hc/api/room"
+	session2 "hc/api/session"
 	"hc/internal/account"
 	"hc/internal/connection"
 	"hc/internal/packet"
@@ -27,7 +29,9 @@ import (
 	registration2 "hc/presentationlayer/event/incoming/registration"
 	"hc/presentationlayer/event/incoming/registration/register"
 	"hc/presentationlayer/event/incoming/registration/register/middleware"
+	room2 "hc/presentationlayer/event/incoming/room"
 	"hc/presentationlayer/event/incoming/user"
+	globalMiddleware "hc/presentationlayer/event/middleware"
 	"hc/presentationlayer/saga"
 	"strconv"
 	"sync"
@@ -252,6 +256,22 @@ func InitializeInfoRetrieveHandler() user.InfoHandler {
 	wire.Build(ProvideUserInfoHandler, session.Set, ProfileSet, ConfigSet, DatabaseSet)
 
 	return user.InfoHandler{}
+}
+
+func ProvideCreateRoomHandler(createRoom apiRoom.CreateRoom, store session2.Store) room2.CreateRoomHandler {
+	return room2.CreateRoomHandler{RoomCreator: createRoom, SessionStore: store}
+}
+
+func InitializeCreateRoomHandler() room2.CreateRoomHandler {
+	wire.Build(ProvideCreateRoomHandler, RoomSet, session.Set)
+
+	return room2.CreateRoomHandler{}
+}
+
+func InitializeAuthenticationMiddleware() *globalMiddleware.MustBeAuthenticated {
+	wire.Build(globalMiddleware.ProvideAuthentication, session.Set)
+
+	return &globalMiddleware.MustBeAuthenticated{}
 }
 
 func InitializeApp() *App {

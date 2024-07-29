@@ -17,12 +17,14 @@ import (
 	"hc/api/config"
 	"hc/api/packet"
 	profile2 "hc/api/profile"
+	room3 "hc/api/room"
+	session2 "hc/api/session"
 	"hc/internal/account"
 	"hc/internal/connection"
 	packet2 "hc/internal/packet"
 	"hc/internal/profile"
 	"hc/internal/profile/application"
-	"hc/internal/room"
+	room2 "hc/internal/room"
 	"hc/internal/session"
 	config2 "hc/pkg/config"
 	"hc/pkg/database"
@@ -30,7 +32,9 @@ import (
 	"hc/presentationlayer/event/incoming/registration"
 	"hc/presentationlayer/event/incoming/registration/register"
 	"hc/presentationlayer/event/incoming/registration/register/middleware"
+	"hc/presentationlayer/event/incoming/room"
 	"hc/presentationlayer/event/incoming/user"
+	middleware2 "hc/presentationlayer/event/middleware"
 	"hc/presentationlayer/saga"
 	"strconv"
 	"sync"
@@ -123,6 +127,22 @@ func InitializeInfoRetrieveHandler() user.InfoHandler {
 	return infoHandler
 }
 
+func InitializeCreateRoomHandler() room.CreateRoomHandler {
+	viper := ProvideConfig()
+	db := ProvideDatabase(viper)
+	storeRoom := room2.ProvideStore(db)
+	createRoom := room2.ProvideCreateRoom(storeRoom)
+	store := session.ProvideSessionStore()
+	createRoomHandler := ProvideCreateRoomHandler(createRoom, store)
+	return createRoomHandler
+}
+
+func InitializeAuthenticationMiddleware() *middleware2.MustBeAuthenticated {
+	store := session.ProvideSessionStore()
+	mustBeAuthenticated := middleware2.ProvideAuthentication(store)
+	return mustBeAuthenticated
+}
+
 func InitializeApp() *App {
 	resolver := ProvideRouteResolver()
 	wrapFunc := connection.ProvideMiddlewareWrapper()
@@ -146,11 +166,11 @@ func InitializeApp() *App {
 
 var ProfileSet = wire.NewSet(profile.Set, wire.Bind(new(profile2.CreateProfile), new(*application.CreateProfile)), wire.Bind(new(profile2.InfoRetriever), new(*application.InfoRetriever)), wire.Bind(new(profile2.Updater), new(*application.UpdateProfile)))
 
-var RoomSet = wire.NewSet(room.Set, DatabaseSet,
+var RoomSet = wire.NewSet(room2.Set, DatabaseSet,
 	ConfigSet,
 )
 
-var AppSet = wire.NewSet(connection.GameServerSet, session.Set, account.Set, room.Set, ConfigSet,
+var AppSet = wire.NewSet(connection.GameServerSet, session.Set, account.Set, room2.Set, ConfigSet,
 	RouteSet,
 	DatabaseSet,
 )
@@ -298,4 +318,8 @@ func ProvideLoginAfterRegistrationMiddleware(service saga.LoginService) middlewa
 	return middleware.LoginAfterRegistration{
 		LoginService: service,
 	}
+}
+
+func ProvideCreateRoomHandler(createRoom room3.CreateRoom, store session2.Store) room.CreateRoomHandler {
+	return room.CreateRoomHandler{RoomCreator: createRoom, SessionStore: store}
 }

@@ -17,6 +17,7 @@ can be updated at any time.
   - [ ] Entering rooms
 - [ ] Pathfinder
 - [ ] Catalogue
+- [ ] Public rooms
 
 ... and more. To be announced.
 
